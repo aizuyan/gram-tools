@@ -1,0 +1,56 @@
+<div class="section" id="code-diff">
+	<div class="alert alert-warning alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+	  	<span aria-hidden="true">&times;</span>
+	  </button>
+	  <strong>Tips</strong> diff工具，为了更好的体验，请使用全屏。
+	</div>	
+	<hr>
+	<div class="row">
+		<div class="col-sm-6">
+			<div class="panel panel-default">
+			  	<div class="panel-heading">
+			  		<button data-showid="code-diff-left" type="button" class="btn btn-default btn-sm select-file-show">
+					  	<span class="glyphicon glyphicon-open-file" aria-hidden="true">
+					  	</span> 选择文件
+					</button>
+			  	</div>
+			  	<div class="panel-body">
+			  		<textarea class="form-control code-diff-left" id="code-diff-left"></textarea>
+			  	</div>
+			</div>			
+		</div>
+		<div class="col-sm-6">
+			<div class="panel panel-default">
+			  	<div class="panel-heading">
+			  		<button data-showid="code-diff-right" type="button" class="btn btn-default btn-sm select-file-show">
+					  	<span class="glyphicon glyphicon-open-file" aria-hidden="true">
+					  	</span> 选择文件
+					</button>
+			  	</div>
+			  	<div class="panel-body">
+			  		<textarea id="code-diff-right" class="form-control code-diff-right"></textarea>
+			  	</div>
+			</div>	
+		</div>
+	</div>
+	<hr>
+	<div class="code-diff-output">
+		<div class="panel panel-default">
+		  	<div class="panel-heading">
+		  		<button type="button" class="btn btn-default btn-sm diff-action">
+				  	<span class="glyphicon glyphicon-hand-down" aria-hidden="true">
+				  	</span> 比较
+				</button>
+		  	</div>
+		  	<div class="panel-body">
+		  		<div class="code-diff-output-show">
+		  			<div class="alert alert-info" role="alert">
+		  				选择文件（或输入内容），点击比较查看比较结果
+		  			</div>
+		  		</div>
+		  	</div>
+		</div>
+	</div>
+</div>
+
