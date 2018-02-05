@@ -37,13 +37,21 @@ function createWin () {
 
   contents = win.webContents;
 
+  // 内容加在完毕之后，设置托盘图标
+  contents.on('did-finish-load', () => {
+    if (!isTrayInit) {
+      Tray.InitTray();
+      isTrayInit = true
+    }
+  })  
+
   // 加载app首页面
   win.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
   }))
 
-  // 关闭窗口的时候
+  // 关闭的时候可能只是想最小化
   win.on('close', (e) => {
     if (willQuitApp) {
       win = null
@@ -51,7 +59,7 @@ function createWin () {
       e.preventDefault()
       win.hide()
     }
-  })
+  });
 
   // 窗口已经关闭的时候销毁
   win.on('closed', () => {
@@ -59,31 +67,8 @@ function createWin () {
     contents = null
   })
 
-  // 内容加在完毕之后，设置托盘图标
-  contents.on('did-finish-load', () => {
-    if (!isTrayInit) {
-      Tray.InitTray();
-      isTrayInit = true
-    }
-  })
-
   // Open the DevTools.
-  contents.openDevTools()
-
-  // Emitted when the window is closed.
-  win.on('close', (e) => {
-      /* the user only tried to close the window */
-      e.preventDefault()
-      win.hide()
-  })
-
-  // Emitted when the window is closed.
-  win.on('closed', () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    win = null;
-  })
+  //contents.openDevTools()
 }
 app.on('ready', function() {
   createWin();
@@ -92,7 +77,7 @@ app.on('ready', function() {
 // mac下面点击关闭，最小化到docker中，再次点击恢复
 app.on('activate', function () {
   if (!win) {
-    createWindow()
+    createWin()
   } else if (win.isMinimized()) {
     win.restore()
   } else {
@@ -100,7 +85,13 @@ app.on('activate', function () {
   }
 })
 
+// 真正的退出
+app.on('before-quit', () => willQuitApp = true)
+
 app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 })
 
 
