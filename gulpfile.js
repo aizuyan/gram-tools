@@ -4,10 +4,6 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
     path = require('path'),
-    uglify = require('gulp-uglify'),
-    gutil = require('gulp-util'),
-    babel = require('gulp-babel'),
-    browserify = require("browserify"),
     replace = require("gulp-replace"),
     fs = require("fs");
 
@@ -40,6 +36,12 @@ gulp.task('handleCss', ["makeCss"], function () {
         .pipe(rename({suffix:'.min'}))
         .pipe(gulp.dest(path.join(assetsPath, "css")));
 });
+
+gulp.task("handleImg", function () {
+    return gulp.src("img/**/*.png")
+        .pipe(gulp.dest(path.join(assetsPath, "img")));
+});
+
 
 /**
  * 处理html
