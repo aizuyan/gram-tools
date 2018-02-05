@@ -12,7 +12,19 @@ let contents = null;
 let isTrayInit = false;
 let willQuitApp = false;
 
-function createWindow () {
+// 判断是不是第二个实例，第二个实例执行到这里显示之前的窗口
+const isSecondInstance = app.makeSingleInstance((commandLine, workingDirectory) => {
+  if (win) {
+    if (win.isMinimized()) win.restore()
+    win.focus()
+  }
+})
+if (isSecondInstance) {
+  app.quit()
+}
+
+// 创建窗口
+function createWin () {
   // 创建主窗口
   win = new BrowserWindow({
     width: 960,
@@ -25,11 +37,10 @@ function createWindow () {
 
   contents = win.webContents;
 
-  // and load the index.html of the app.
+  // 加载app首页面
   win.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
-    slashes: true
   }))
 
   // 关闭窗口的时候
@@ -73,94 +84,24 @@ function createWindow () {
     // when you should delete the corresponding element.
     win = null;
   })
-     // Create the Application's main menu
-  let template = [{
-      label: 'Edit',
-      submenu: [
-          {
-              label: 'Undo',
-              accelerator: 'CmdOrCtrl+Z',
-              selector: 'undo:',
-              role: 'undo'
-          },
-          {
-              label: 'Redo',
-              accelerator: 'Shift+CmdOrCtrl+Z',
-              selector: 'redo:',
-              role: 'redo'
-          },
-          {
-              type: 'separator'
-          },
-          {
-              label: 'Cut',
-              accelerator: 'CmdOrCtrl+X',
-              selector: 'cut:',
-              role: 'cut'
-          },
-          {
-              label: 'Copy',
-              accelerator: 'CmdOrCtrl+C',
-              selector: 'copy:',
-              role: 'copy'
-          },
-          {
-              label: 'Paste',
-              accelerator: 'CmdOrCtrl+V',
-              selector: 'paste:',
-              role: 'paste'
-          },
-          {
-              label: 'Select All',
-              accelerator: 'CmdOrCtrl+A',
-              selector: 'selectAll:',
-              role: 'selectall'
-          }
-      ]
-  }];
-
-    //注册菜单  
-    Menu.setApplicationMenu(Menu.buildFromTemplate(template));  
 }
+app.on('ready', function() {
+  createWin();
+});
 
-// 是不是需要退出，只能运行一个实例
-const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
-  if (win) {
-    if (win.isMinimized()) {
-      win.restore()
-    }
+// mac下面点击关闭，最小化到docker中，再次点击恢复
+app.on('activate', function () {
+  if (!win) {
+    createWindow()
+  } else if (win.isMinimized()) {
+    win.restore()
+  } else {
     win.show()
   }
 })
 
-if (shouldQuit) {
-  app.quit()
-}
-
-app.on('before-quit', () => willQuitApp = true)
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
-
-// Quit when all windows are closed.
 app.on('window-all-closed', () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
 })
-
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (win === null) {
-    createWindow()
-  }
-})
-
 
 
 
