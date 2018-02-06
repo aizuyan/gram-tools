@@ -16,12 +16,20 @@ function InitTray(app, win) {
 
     var trayMenuTemplate = [
         {
-            label: "Grap Tools",
-            enabled: false
+            label: "Gram Tools",
+            click: () => {
+                app.emit('show')
+            }
+        },
+        {
+            type: "separator"
         },
         {
             label: "退出",
-            enabled: false
+            accelerator: 'CommandOrControl+Q',
+            click: () => {
+                app.quit()
+            }
         }
     ];
     var trayMenu = Menu.buildFromTemplate(trayMenuTemplate);
