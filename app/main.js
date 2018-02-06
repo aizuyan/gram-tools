@@ -74,7 +74,9 @@ app.on('ready', function() {
   createWin();
 });
 
-
+/**
+ * 添加一个展示时间，通过emit调用
+ */
 app.on('show', function () {
   if (win) {
     if (win.isMinimized()) {
@@ -101,9 +103,9 @@ app.on('activate', function () {
 app.on('before-quit', () => willQuitApp = true)
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  //if (process.platform !== 'darwin') {
+   // app.quit();
+  //}
 })
 
 
