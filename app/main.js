@@ -40,7 +40,7 @@ function createWin () {
   // 内容加在完毕之后，设置托盘图标
   contents.on('did-finish-load', () => {
     if (!isTrayInit) {
-      Tray.InitTray();
+      Tray.InitTray(app, win);
       isTrayInit = true
     }
   })  
@@ -73,6 +73,18 @@ function createWin () {
 app.on('ready', function() {
   createWin();
 });
+
+
+app.on('show', function () {
+  if (win) {
+    if (win.isMinimized()) {
+      win.restore()
+    }
+    win.show()
+  } else {
+    createWin()
+  }
+})
 
 // mac下面点击关闭，最小化到docker中，再次点击恢复
 app.on('activate', function () {

@@ -3,7 +3,7 @@
 var path = require('path');
 const {Menu, Tray} = require('electron')
 
-function InitTray() {
+function InitTray(app, win) {
     var trayIcon = null;
 
     if (process.platform === 'darwin') {
@@ -12,6 +12,7 @@ function InitTray() {
     else {
         trayIcon = new Tray(path.join(__dirname, "../..", 'assets/img/logo.png'));
     }
+    trayIcon.setToolTip("GramTools")
 
     var trayMenuTemplate = [
         {
@@ -25,6 +26,12 @@ function InitTray() {
     ];
     var trayMenu = Menu.buildFromTemplate(trayMenuTemplate);
     trayIcon.setContextMenu(trayMenu);
+
+    trayIcon.on('click', () => {
+        if (process.platform === 'win32') {
+            app.emit('show')
+        }
+    });
 };
 
 exports.InitTray = InitTray;
