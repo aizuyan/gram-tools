@@ -81,8 +81,28 @@ table.diff th.author {
 	border-top:1px solid #BBC;
 	background:#EFEFEF
 }
-#json-format #container {
+#json-format #json-format-container {
   height: 100%;
+  background-color: #FFF;
+}
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor-readonly,
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor-field,
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor-value,
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor td,
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor th,
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor textarea,
+#json-format #json-format-container .jsoneditor.jsoneditor-mode-tree .jsoneditor-schema-error {
+  font-size: 15px !important;
+}
+#json-format #json-format-container .jsoneditor .ace_editor.ace-jsoneditor {
+  font-size: 15px !important;
+}
+#json-format #json-format-container .jsoneditor .jsoneditor-menu button[type=button] {
+  cursor: pointer;
+  outline: none;
+}
+#json-format #json-format-container .jsoneditor .jsoneditor-menu .jsoneditor-menu button[type=button].jsoneditor-selected {
+  background-color: #3883fa;
 }
 
 #show #what {
@@ -137,7 +157,7 @@ html body {
   -webkit-box-sizing: border-box;
   background-color: #222027;
   font-size: 1rem;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 #index > .left > .item {
   font-size: 0.8rem;

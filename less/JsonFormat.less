@@ -1,5 +1,27 @@
 #json-format {
-	#container {
+	#json-format-container {
 		height: 100%;
+		background-color: #FFF;
+		.jsoneditor {
+			&.jsoneditor-mode-tree {
+				div.jsoneditor-readonly, div.jsoneditor-field, div.jsoneditor-value, div.jsoneditor td, div.jsoneditor th, div.jsoneditor textarea, .jsoneditor-schema-error	{
+					font-size: 15px !important;
+				}			
+			}
+			.ace_editor.ace-jsoneditor {
+				font-size: 15px !important;
+			}
+			.jsoneditor-menu {
+				button[type=button] {
+					cursor: pointer;
+					outline: none;
+				}
+				.jsoneditor-menu {
+					button[type=button].jsoneditor-selected {
+						background-color: #3883fa;
+					}
+				}
+			}
+		}
 	}
 }
