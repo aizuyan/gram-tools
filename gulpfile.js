@@ -66,16 +66,19 @@ gulp.task("handleHtml", function() {
             "{JsonFormat}", getHtmlSection("JsonFormat")
         ))
         .pipe(replace(
-            "{JsonFormatSvg}", getSvgSection("JsonFormatSvg")
+            "{TxtDiff}", getHtmlSection("TxtDiff")
         ))
         .pipe(replace(
-            "{TxtDiff}", getHtmlSection("TxtDiff")
+            "{JsonFormatSvg}", getSvgSection("JsonFormatSvg")
         ))
         .pipe(replace(
             "{TxtDiffSvg}", getSvgSection("TxtDiffSvg")
         ))
         .pipe(replace(
             "{LoadingSvg}", getSvgSection("LoadingSvg")
+        ))
+        .pipe(replace(
+            "{SwitchSvg}", getSvgSection("SwitchSvg")
         ))   
         .pipe(gulp.dest(appPath));
 });

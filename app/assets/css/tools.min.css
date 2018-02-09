@@ -109,13 +109,110 @@ table.diff th.author {
   height: 100%;
 }
 
+#txt-diff .sm-alert {
+  padding: 1rem;
+  padding-right: 6rem;
+  font-size: 1.4rem;
+}
+#txt-diff .sm-alert .sm-colse {
+  padding: 1rem;
+  font-size: 2.2rem;
+  outline: none;
+}
+#txt-diff .diff-condtion {
+  margin: 1.6rem 1.6rem 0;
+  font-size: 1.6rem;
+}
+#txt-diff .diff-condtion label.btn {
+  font-size: 1.4rem;
+}
+#txt-diff .diff-condtion input[type=radio][name=diffLevel] {
+  cursor: pointer;
+}
+#txt-diff .diff-condtion .do-diff {
+  display: inline-block;
+  margin-left: 2rem;
+}
+#txt-diff .diff-condtion .do-diff button[type=button] {
+  outline: none;
+}
+#txt-diff .diff-condtion .do-diff button[type=button]:focus {
+  outline: none;
+  box-shadow: none;
+}
+#txt-diff .txt-wrap {
+  margin: 0 0;
+}
+#txt-diff .txt-wrap textarea.code-diff-left,
+#txt-diff .txt-wrap textarea.code-diff-right {
+  font-size: 1.4rem;
+}
+#txt-diff .txt-diff-result {
+  margin: 0 1rem 1rem;
+  border: 1px solid #F0F0F0;
+  font-size: 2rem;
+}
+#txt-diff .txt-diff-result .level-line {
+  height: 1.2em;
+  line-height: 1.2em;
+  background-color: #FFF;
+  padding-left: 5em;
+  position: relative;
+}
+#txt-diff .txt-diff-result .level-line:hover .line-header .line-num {
+  background-color: #DED7FC;
+  border-color: #CABFFA;
+}
+#txt-diff .txt-diff-result .level-line div {
+  display: inline-block;
+}
+#txt-diff .txt-diff-result .level-line .line-info pre {
+  margin: 0;
+  font-size: inherit;
+}
+#txt-diff .txt-diff-result .level-line .line-header {
+  margin-left: -5em;
+  position: absolute;
+  height: 100%;
+}
+#txt-diff .txt-diff-result .level-line .line-header .line-num {
+  display: inline-block;
+  width: 2em;
+  height: 100%;
+  background-color: #fafafa;
+  border-right: 1px solid;
+  border-color: #f0f0f0;
+  text-align: right;
+  padding: 0 .2em 0 0;
+  vertical-align: top;
+}
+#txt-diff .txt-diff-result .level-line .line-header .line-flag {
+  width: 1em;
+  text-align: center;
+  color: #9bb0a1;
+}
+#txt-diff .txt-diff-result .level-line.line-add {
+  background-color: #ecfdf0;
+}
+#txt-diff .txt-diff-result .level-line.line-add .line-num {
+  background-color: #ddfbe6;
+  border-color: #c7f0d2;
+}
+#txt-diff .txt-diff-result .level-line.line-delete {
+  background-color: #fbe9eb;
+}
+#txt-diff .txt-diff-result .level-line.line-delete .line-num {
+  background-color: #f9d7dc;
+  border-color: #fac5cd;
+}
+
 * {
   margin: 0;
   padding: 0;
 }
 html {
   height: 100%;
-  font-size: 20px;
+  font-size: 10px;
 }
 html body {
   height: 100%;
@@ -156,11 +253,11 @@ html body {
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   background-color: #222027;
-  font-size: 1rem;
+  font-size: 2rem;
   overflow-y: auto;
 }
 #index > .left > .item {
-  font-size: 0.8rem;
+  font-size: 1.6rem;
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   padding: 7px 20px 10px;
@@ -178,23 +275,23 @@ html body {
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   color: #8f8f8f;
-  font-size: 0.8rem;
+  font-size: 1.6rem;
   padding: 5px 10px;
   position: relative;
 }
 #index > .left > .division > .line {
   flex: 1;
   position: relative;
-  margin-left: .5rem;
+  margin-left: 1rem;
 }
 #index > .left > .division > .line:after {
   content: "";
   display: block;
   width: 100%;
   background-color: #4d4d4d;
-  height: 0.05rem;
+  height: 0.1rem;
   position: absolute;
-  top: 0.5rem;
+  top: 1rem;
 }
 #index > .right {
   flex: 1;

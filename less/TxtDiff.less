@@ -1,0 +1,110 @@
+#txt-diff {
+	.sm-alert {
+		padding: 1rem;
+    	padding-right: 6rem;
+    	font-size: 1.4rem;
+    	.sm-colse {
+    		padding: 1rem;
+    		font-size: 2.2rem;
+    		outline: none;
+    	}
+	}
+	.diff-condtion {
+		margin: 1.6rem 1.6rem 0;
+		font-size: 1.6rem;
+		label {
+			&.btn {
+				font-size: 1.4rem;
+			}
+		}
+		input[type=radio][name=diffLevel] {
+			cursor: pointer;
+		}
+		.do-diff {
+			button[type=button] {
+				outline: none;
+				&:focus {
+					outline: none;
+					box-shadow: none;
+				}
+			}
+			display: inline-block;
+			margin-left: 2rem;
+		}
+		.switch-icon {
+
+		}
+	}
+	.txt-wrap {
+		margin: 0 0;
+		textarea {
+			&.code-diff-left, &.code-diff-right {
+				font-size: 1.4rem;
+			}
+		}
+	}
+	.txt-diff-result {
+		margin: 0 1rem 1rem;
+		border: 1px solid #F0F0F0;
+		font-size: 2rem;
+		.level-line {
+			height: 1.2em;
+			line-height: 1.2em;
+			background-color: #FFF;
+			padding-left: 5em;
+			position: relative;
+			&:hover {
+				.line-header {
+					.line-num {
+						background-color: #DED7FC;
+						border-color: #CABFFA;
+					}
+				}
+			}
+			div {
+				display: inline-block;
+			}
+			.line-info {
+				pre {
+					margin: 0;
+					font-size: inherit;
+				}
+			}
+			.line-header {
+				margin-left: -5em;
+				position: absolute;
+				height: 100%;
+				.line-num {
+	    			display: inline-block;
+	    			width: 2em;
+	    			height: 100%;
+	    			background-color: #fafafa;
+					border-right: 1px solid;
+					border-color: #f0f0f0;
+					text-align: right;
+					padding: 0 .2em 0 0;
+					vertical-align: top;
+				}
+				.line-flag {
+					width: 1em;
+					text-align: center;
+					color: #9bb0a1
+				}
+			}
+			&.line-add {
+				background-color: #ecfdf0;
+				.line-num {
+					background-color: #ddfbe6;
+    				border-color: #c7f0d2;
+				}
+			}
+			&.line-delete {
+				background-color: #fbe9eb;
+				.line-num {
+					background-color: #f9d7dc;
+    				border-color: #fac5cd;
+				}
+			}
+		}
+	}
+}

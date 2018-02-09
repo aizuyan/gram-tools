@@ -54,26 +54,6 @@ export default () => {
 
 
     (function() {
-      // resize调整
-      let res;
-      $(window).resize(function(){
-          if (res){
-            clearTimeout(res);
-          }
-          res = setTimeout(function(){
-              let width = $("#"+containerId).width();
-              let fontSize = width * 0.02;
-              if (fontSize > 20) {
-                fontSize = 20;
-              } else if (fontSize < 14) {
-                fontSize = 14;
-              }
-              nowFontSize = fontSize;
-            },
-            500
-          );
-      });   
-
       formatMenuInfo();
     })();
 };

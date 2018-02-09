@@ -1,9 +1,14 @@
 import "velocity-animate";
 import "../node_modules/velocity-animate/velocity.ui.js";
 //import "bootstrap";
+import "bootstrap";
 import "../node_modules/bootstrap/dist/css/bootstrap.css";
 
-import JsonFromat from "./JsonFormat.js"; // JSON格式化
+// import layer
+import "../node_modules/layui-layer/dist/layer.js";
+
+import JsonFromat from "./JsonFormat.js";
+import TxtDiff from "./TxtDiff.js";
 
 var pageObj = {
 	system: {},	// app系统级别的变量
@@ -69,6 +74,7 @@ pageObj.init = function(){
 		pageObj.initLoading();
 		pageObj.initMenu();
 		JsonFromat();
+		TxtDiff();
 	});
 };
 pageObj.init();
