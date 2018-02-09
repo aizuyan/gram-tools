@@ -8,7 +8,34 @@ function handleLine(leftTxt, rightTxt, resultObj) {
     let lineLeft = 0, lineRight = 0;
     let lines = [];
     let element = "";
-    let parts;
+    let parts, last = {};
+    console.log(diff);
+    for (let i=0 ; i < diff.length; i++) {
+      let now = diff[i];
+      if (
+        now.added == true && last.removed == true ||
+        last.added == true && now.removed == true
+      ) {
+        console.log(last ,now);
+        let minLength = now.value.length > last.value.length ? last.value.length : now.value.length;
+        let trimLen = 0;
+        for (let j=0; j<minLength; j++) {
+          if (now.value[now.value.length - 1 - j] == last.value[last.value.length - 1 - j]) {
+            trimLen++;
+          } else {
+            break;
+          }
+        }
+        console.log(trimLen);
+
+        diff[i].value = diff[i].value.substr(0, diff[i].value.length-trimLen);
+        diff[i-1].value = diff[i-1].value.substr(0, diff[i-1].value.length-trimLen);
+      }
+
+      last = now;
+    }
+    console.log(diff);
+
     diff.forEach(function(part){
       parts = part.value.split("\n");
       if (part.added) {

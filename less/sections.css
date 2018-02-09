@@ -85,7 +85,7 @@
 }
 #txt-diff .txt-diff-result .level-line .line-info pre {
   margin: 0;
-  font-size: inherit;
+  font-size: .8em;
 }
 #txt-diff .txt-diff-result .level-line .line-header {
   margin-left: -5em;
@@ -94,7 +94,7 @@
 }
 #txt-diff .txt-diff-result .level-line .line-header .line-num {
   display: inline-block;
-  width: 2em;
+  width: 4rem;
   height: 100%;
   background-color: #fafafa;
   border-right: 1px solid;
@@ -102,6 +102,8 @@
   text-align: right;
   padding: 0 .2em 0 0;
   vertical-align: top;
+  color: rgba(0, 0, 0, 0.3);
+  font-size: .8em;
 }
 #txt-diff .txt-diff-result .level-line .line-header .line-flag {
   width: 1em;
