@@ -48,8 +48,6 @@
 		border: 1px solid #F0F0F0;
 		font-size: 2rem;
 		.level-line {
-			height: 1.2em;
-			line-height: 1.2em;
 			background-color: #FFF;
 			padding-left: 5em;
 			position: relative;
@@ -65,10 +63,11 @@
 				display: inline-block;
 			}
 			.line-info {
-				pre {
-					margin: 0;
-					font-size: .8em; 
-				}
+				word-wrap: break-word;
+			    word-break: break-all;
+			    line-height: 3rem;
+			    font-size: 2rem;
+			    padding-left: 1rem;
 			}
 			.line-header {
 				margin-left: -5em;
@@ -89,6 +88,7 @@
 				}
 				.line-flag {
 					width: 1em;
+					height: 100%;
 					text-align: center;
 					color: #9bb0a1
 				}

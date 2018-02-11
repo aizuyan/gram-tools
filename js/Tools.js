@@ -26,6 +26,7 @@ Tools.prototype.htmlEntities = function(html) {
 	}
 	// 替换的顺序很重要
 	html = this.regA2B(html, [
+		[/\t/gm, "    "],
 		[/&/gm, "&amp;"],
 		[/ /gm, "&nbsp;"],
 		[/</gm, "&lt;"],

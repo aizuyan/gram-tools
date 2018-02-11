@@ -8,31 +8,12 @@ function handleLine(leftTxt, rightTxt, resultObj) {
     let lineLeft = 0, lineRight = 0;
     let lines = [];
     let element = "";
-    let parts, last = {};
+    let parts;
     console.log(diff);
     for (let i=0 ; i < diff.length; i++) {
-      let now = diff[i];
-      if (
-        now.added == true && last.removed == true ||
-        last.added == true && now.removed == true
-      ) {
-        console.log(last ,now);
-        let minLength = now.value.length > last.value.length ? last.value.length : now.value.length;
-        let trimLen = 0;
-        for (let j=0; j<minLength; j++) {
-          if (now.value[now.value.length - 1 - j] == last.value[last.value.length - 1 - j]) {
-            trimLen++;
-          } else {
-            break;
-          }
-        }
-        console.log(trimLen);
-
-        diff[i].value = diff[i].value.substr(0, diff[i].value.length-trimLen);
-        diff[i-1].value = diff[i-1].value.substr(0, diff[i-1].value.length-trimLen);
+      if (diff[i].value[diff[i].value.length - 1] == "\n") {
+        diff[i].value = diff[i].value.substr(0, diff[i].value.length - 1);
       }
-
-      last = now;
     }
     console.log(diff);
 
@@ -42,14 +23,14 @@ function handleLine(leftTxt, rightTxt, resultObj) {
         parts.forEach(function(item) {
           item = tools.htmlEntities(item);
           lineRight++;
-          element = "<div class='level-line line-add'><div class='line-header'><div class='line-num'></div><div class='line-num'>"+lineRight+"</div><div class='line-flag'>+</div></div><div class='line-info'><pre>"+item+"</pre></div></div>";
+          element = "<div class='level-line line-add'><div class='line-header'><div class='line-num'></div><div class='line-num'>"+lineRight+"</div><div class='line-flag'>+</div></div><div class='line-info'>"+item+"</div></div>";
           lines.push(element);
         });
       } else if (part.removed) {
         parts.forEach(function(item) {
           item = tools.htmlEntities(item);
           lineLeft++;
-          element = "<div class='level-line line-delete'><div class='line-header'><div class='line-num'>"+lineLeft+"</div><div class='line-num'></div><div class='line-flag'>-</div></div><div class='line-info'><pre>"+item+"</pre></div></div>";
+          element = "<div class='level-line line-delete'><div class='line-header'><div class='line-num'>"+lineLeft+"</div><div class='line-num'></div><div class='line-flag'>-</div></div><div class='line-info'>"+item+"</div></div>";
           lines.push(element);
         });
       } else {
@@ -57,7 +38,7 @@ function handleLine(leftTxt, rightTxt, resultObj) {
           item = tools.htmlEntities(item);
           lineLeft++;
           lineRight++;
-          element = "<div class='level-line'><div class='line-header'><div  class='line-num'>"+lineLeft+"</div><div  class='line-num'>"+lineRight+"</div class='line-flag'><div></div></div><div class='line-info'><pre>"+item+"</pre></div></div>";
+          element = "<div class='level-line'><div class='line-header'><div  class='line-num'>"+lineLeft+"</div><div  class='line-num'>"+lineRight+"</div><div class='line-flag'></div></div><div class='line-info'>"+item+"</div></div>";
           lines.push(element);
         });
       }
