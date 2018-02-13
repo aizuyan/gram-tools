@@ -69,6 +69,49 @@
   border: 1px solid #F0F0F0;
   font-size: 2rem;
 }
+#txt-diff .txt-diff-result .level-char {
+  background-color: #FFF;
+  padding-left: 2em;
+  position: relative;
+}
+#txt-diff .txt-diff-result .level-char div {
+  display: inline-block;
+}
+#txt-diff .txt-diff-result .level-char:hover .char-header .char-num {
+  background-color: #DED7FC;
+  border-color: #CABFFA;
+}
+#txt-diff .txt-diff-result .level-char .char-info {
+  word-wrap: break-word;
+  word-break: break-all;
+  line-height: 3rem;
+  font-size: 2rem;
+  padding-left: 1rem;
+}
+#txt-diff .txt-diff-result .level-char .char-info .char-add {
+  background-color: #ecfdf0;
+}
+#txt-diff .txt-diff-result .level-char .char-info .char-delete {
+  background-color: #fbe9eb;
+}
+#txt-diff .txt-diff-result .level-char .char-header {
+  margin-left: -2em;
+  position: absolute;
+  height: 100%;
+}
+#txt-diff .txt-diff-result .level-char .char-header .char-num {
+  display: inline-block;
+  width: 4rem;
+  height: 100%;
+  background-color: #fafafa;
+  border-right: 1px solid;
+  border-color: #f0f0f0;
+  text-align: right;
+  padding: 0 .2em 0 0;
+  vertical-align: top;
+  color: rgba(0, 0, 0, 0.3);
+  font-size: .8em;
+}
 #txt-diff .txt-diff-result .level-line {
   background-color: #FFF;
   padding-left: 5em;

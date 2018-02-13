@@ -61571,7 +61571,6 @@ function handleLine(leftTxt, rightTxt, resultObj) {
         diff[i].value = diff[i].value.substr(0, diff[i].value.length - 1);
       }
     }
-    console.log(diff);
 
     diff.forEach(function(part){
       parts = part.value.split("\n");
@@ -61604,17 +61603,76 @@ function handleLine(leftTxt, rightTxt, resultObj) {
     $(resultObj).append(html);
 }
 
+function handleChar(leftTxt, rightTxt, resultObj) {
+    let diff = JsDiff.diffChars(leftTxt, rightTxt);
+    console.log(diff);
+    let lines = [], line = 0, partValue, charAtPos;
+    let element = "";
+    diff.forEach(function(part){
+      partValue = part.value;
+      for (let i=0; i<partValue.length; i++) {
+        if (!element) {
+          line++;
+          element = "<div class='level-char'>"
+                  + "<div class='char-header'>"
+                  + "<div class='char-num'>" + line
+                  + "</div>"
+                  + "</div>"
+                  + "<div class='char-info'>";
+        }
+        charAtPos = partValue.charAt(i);
+        if (charAtPos == "\n") {
+          element += "</div></div>";
+          lines.push(element);
+          element = "";
+          continue;
+        }
+
+        charAtPos = tools.htmlEntities(charAtPos);
+        if (part.added) {
+          element += "<span class='char-add'>"+charAtPos+"</span>";
+        } else if (part.removed) {
+          element += "<span class='char-delete'>"+charAtPos+"</span>";
+        } else {
+          element += "<span>"+charAtPos+"</span>";
+        }
+      }
+    });
+
+    if (element) {
+        element += "</div></div>";
+        lines.push(element);
+    }
+    let html = lines.join("");
+    $(resultObj).html("");
+    $(resultObj).append(html);    
+};
+
 /* harmony default export */ __webpack_exports__["a"] = (() => {
   let leftTxt, rightTxt, diffLevel, txtDiffResult;
+  // 初始化点击比较级别事件
+  $("#txt-diff").on("click", ".diff-level-type", function() {
+    let me = $(this);
+    me.siblings(".diff-level-type")
+      .removeClass("active")
+      .find("input[name=diffLevel]")
+      .removeAttr("checked");
+    me.addClass("active")
+      .find("input[name=diffLevel]")
+      .attr("checked", "checked");
+  });
+
+  // 处理diff
   $("#txt-diff").on("click", ".do-diff>button", function() {
     leftTxt = $("#code-diff-left").val();
     rightTxt = $("#code-diff-right").val();
-    diffLevel = $("#txt-diff input[name=diffLevel]").val();
+    diffLevel = $("#txt-diff input[name=diffLevel]:checked").val();
+    console.log(diffLevel);
     txtDiffResult = $("#txt-diff .txt-diff-result");
 
     switch (diffLevel) {
       case "char":
-        handleLine(leftTxt, rightTxt, txtDiffResult);
+        handleChar(leftTxt, rightTxt, txtDiffResult);
         break;
       case "word":
         handleLine(leftTxt, rightTxt, txtDiffResult);

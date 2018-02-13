@@ -47,6 +47,53 @@
 		margin: 0 1rem 1rem;
 		border: 1px solid #F0F0F0;
 		font-size: 2rem;
+		.level-char {
+			div {
+				display: inline-block;
+			}
+			background-color: #FFF;
+			padding-left: 2em;
+			position: relative;
+			&:hover {
+				.char-header {
+					.char-num {
+						background-color: #DED7FC;
+						border-color: #CABFFA;
+					}
+				}
+			}
+			.char-info {
+				word-wrap: break-word;
+			    word-break: break-all;
+			    line-height: 3rem;
+			    font-size: 2rem;
+			    padding-left: 1rem;
+				.char-add {
+					background-color: #ecfdf0;
+				}
+				.char-delete {
+					background-color: #fbe9eb;
+				}
+			}
+			.char-header {
+				margin-left: -2em;
+				position: absolute;
+				height: 100%;
+				.char-num {
+	    			display: inline-block;
+	    			width: 4rem;
+	    			height: 100%;
+	    			background-color: #fafafa;
+					border-right: 1px solid;
+					border-color: #f0f0f0;
+					text-align: right;
+					padding: 0 .2em 0 0;
+					vertical-align: top;
+					color: rgba(0,0,0,0.3);
+					font-size: .8em;
+				}
+			}
+		}
 		.level-line {
 			background-color: #FFF;
 			padding-left: 5em;
