@@ -165,17 +165,31 @@ table.diff th.author {
   border-color: #CABFFA;
 }
 #txt-diff .txt-diff-result .level-char .char-info {
+  display: block;
   word-wrap: break-word;
   word-break: break-all;
   line-height: 3rem;
   font-size: 2rem;
-  padding-left: 1rem;
+  padding-left: 2em;
+  height: 3rem;
+}
+#txt-diff .txt-diff-result .level-char .char-info:has(.changed-delete) {
+  color: red;
+}
+#txt-diff .txt-diff-result .level-char .char-info.changed {
+  background-color: #fafbfc;
+}
+#txt-diff .txt-diff-result .level-char .char-info.changed-delete {
+  background-color: #ffeef0;
+}
+#txt-diff .txt-diff-result .level-char .char-info.changed-add {
+  background-color: #e6ffed;
 }
 #txt-diff .txt-diff-result .level-char .char-info .char-add {
-  background-color: #ecfdf0;
+  background-color: #acf2bd;
 }
 #txt-diff .txt-diff-result .level-char .char-info .char-delete {
-  background-color: #fbe9eb;
+  background-color: #fdb8c0;
 }
 #txt-diff .txt-diff-result .level-char .char-header {
   margin-left: -2em;
@@ -194,6 +208,12 @@ table.diff th.author {
   vertical-align: top;
   color: rgba(0, 0, 0, 0.3);
   font-size: .8em;
+}
+#txt-diff .txt-diff-result .level-char .char-header .char-flag {
+  width: 2em;
+  height: 100%;
+  text-align: center;
+  color: #9bb0a1;
 }
 #txt-diff .txt-diff-result .level-line {
   background-color: #FFF;

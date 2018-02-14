@@ -63,16 +63,30 @@
 				}
 			}
 			.char-info {
+				display: block;
 				word-wrap: break-word;
 			    word-break: break-all;
 			    line-height: 3rem;
 			    font-size: 2rem;
-			    padding-left: 1rem;
+			    padding-left: 2em;
+			    height: 3rem;
+			    &:has(.changed-delete) {
+			    	color: red;
+			    }
+			    &.changed {
+			    	background-color: #fafbfc;
+			    }
+			    &.changed-delete {
+			    	background-color: #ffeef0;
+			    }
+			    &.changed-add {
+			    	background-color: #e6ffed;
+			    }
 				.char-add {
-					background-color: #ecfdf0;
+					background-color: #acf2bd;
 				}
 				.char-delete {
-					background-color: #fbe9eb;
+					background-color: #fdb8c0;
 				}
 			}
 			.char-header {
@@ -91,6 +105,12 @@
 					vertical-align: top;
 					color: rgba(0,0,0,0.3);
 					font-size: .8em;
+				}
+				.char-flag {
+					width: 2em;
+					height: 100%;
+					text-align: center;
+					color: #9bb0a1
 				}
 			}
 		}

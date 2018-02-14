@@ -51,22 +51,44 @@ function handleChar(leftTxt, rightTxt, resultObj) {
     let diff = JsDiff.diffChars(leftTxt, rightTxt);
     console.log(diff);
     let lines = [], line = 0, partValue, charAtPos;
-    let element = "";
+    let element = "", changed = 0;
     diff.forEach(function(part){
       partValue = part.value;
       for (let i=0; i<partValue.length; i++) {
+        charAtPos = partValue.charAt(i);
+        if (charAtPos == "\n" && element != "") {
+          i--;
+        } else {
+          if (part.added) {
+            changed = changed | 1;
+          }
+          if (part.removed) {
+            changed = changed | 2;
+          }
+        }
+
         if (!element) {
           line++;
           element = "<div class='level-char'>"
                   + "<div class='char-header'>"
                   + "<div class='char-num'>" + line
                   + "</div>"
+                  + "<div class='char-flag'>{CHARFLAG}</div>"
                   + "</div>"
-                  + "<div class='char-info'>";
+                  + "<div class='char-info {CHANGED}'>";
         }
-        charAtPos = partValue.charAt(i);
+
         if (charAtPos == "\n") {
           element += "</div></div>";
+          element = tools.formatString(element, {
+            "CHANGED": (changed==1) ? "changed-add" : 
+                      ((changed == 2) ? "changed-delete" : 
+                      ((changed == 3) ? "changed" : "")),
+            "CHARFLAG": (changed==1) ? "+" : 
+                      ((changed == 2) ? "-" : 
+                      ((changed == 3) ? "+-" : "")),
+          });
+          changed = 0;
           lines.push(element);
           element = "";
           continue;
@@ -85,6 +107,15 @@ function handleChar(leftTxt, rightTxt, resultObj) {
 
     if (element) {
         element += "</div></div>";
+        element = tools.formatString(element, {
+          "CHANGED": (changed==1) ? "changed-add" : 
+                    ((changed == 2) ? "changed-delete" : 
+                    ((changed == 3) ? "changed" : "")),
+          "CHARFLAG": (changed==1) ? "+" : 
+                    ((changed == 2) ? "-" : 
+                    ((changed == 3) ? "+-" : "")),
+        });
+        changed = 0;
         lines.push(element);
     }
     let html = lines.join("");
