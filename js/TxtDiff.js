@@ -51,13 +51,23 @@ function handleChar(leftTxt, rightTxt, resultObj) {
     let diff = JsDiff.diffChars(leftTxt, rightTxt);
     console.log(diff);
     let lines = [], line = 0, partValue, charAtPos;
-    let element = "", changed = 0;
+    let element = "", changed = 0, last;
+    let isOnlyEnter = function(str) {
+      let ret = true;
+      for (let i=0; i<str.length; i++) {
+        if (str.charAt(i) != "\n") {
+          ret = false;
+          break;
+        }
+      }
+      return ret;
+    };
     diff.forEach(function(part){
       partValue = part.value;
       for (let i=0; i<partValue.length; i++) {
         charAtPos = partValue.charAt(i);
-        if (charAtPos == "\n" && element != "") {
-          i--;
+        last = charAtPos;
+        if (charAtPos == "\n" && last == charAtPos && !isOnlyEnter(partValue)) {
         } else {
           if (part.added) {
             changed = changed | 1;
@@ -124,25 +134,11 @@ function handleChar(leftTxt, rightTxt, resultObj) {
 };
 
 export default () => {
-  let leftTxt, rightTxt, diffLevel, txtDiffResult;
-  // 初始化点击比较级别事件
-  $("#txt-diff").on("click", ".diff-level-type", function() {
-    let me = $(this);
-    me.siblings(".diff-level-type")
-      .removeClass("active")
-      .find("input[name=diffLevel]")
-      .removeAttr("checked");
-    me.addClass("active")
-      .find("input[name=diffLevel]")
-      .attr("checked", "checked");
-  });
-
-  // 处理diff
-  $("#txt-diff").on("click", ".do-diff>button", function() {
+  let leftTxt, rightTxt, diffLevel, txtDiffResult, handleFunc;
+  handleFunc = function() {
     leftTxt = $("#code-diff-left").val();
     rightTxt = $("#code-diff-right").val();
     diffLevel = $("#txt-diff input[name=diffLevel]:checked").val();
-    console.log(diffLevel);
     txtDiffResult = $("#txt-diff .txt-diff-result");
 
     switch (diffLevel) {
@@ -156,5 +152,22 @@ export default () => {
         handleLine(leftTxt, rightTxt, txtDiffResult);
         break;
     }
+  };
+  // 初始化点击比较级别事件
+  $("#txt-diff").on("click", ".diff-level-type", function() {
+    let me = $(this);
+    me.siblings(".diff-level-type")
+      .removeClass("active")
+      .find("input[name=diffLevel]")
+      .removeAttr("checked");
+    me.addClass("active")
+      .find("input[name=diffLevel]")
+      .attr("checked", "checked");
+    handleFunc();
+  });
+
+  // 处理diff
+  $("#txt-diff").on("change, keyup", "#code-diff-left, #code-diff-right", function() {
+    handleFunc();
   });
 };
