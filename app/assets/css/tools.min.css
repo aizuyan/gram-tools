@@ -104,6 +104,9 @@ table.diff th.author {
 #json-format #json-format-container .jsoneditor .jsoneditor-menu .jsoneditor-menu button[type=button].jsoneditor-selected {
   background-color: #3883fa;
 }
+#json-format #json-format-container .jsoneditor .jsoneditor-menu .jsoneditor-history {
+  background-image: url("../sections/IconHistory.svg");
+}
 
 #show #what {
   height: 100%;

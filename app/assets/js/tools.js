@@ -26567,6 +26567,9 @@ module.exports = function (css) {
     function formatMenuInfo() {
       $("button[type=button].jsoneditor-repair").remove();
       $("a.jsoneditor-poweredBy").remove();
+
+      // 增加历史记录按钮
+      //$(".jsoneditor-menu > .jsoneditor-modes").after('<button type="button" class="jsoneditor-history" disabled=""></button>');
     };
 
   	container = document.getElementById(containerId);
@@ -26585,6 +26588,12 @@ module.exports = function (css) {
         formatMenuInfo();
       }
   	};
+
+    function fixedOnModeChange() {
+      $(document).on("click", "#json-format #json-format-container .jsoneditor-type-modes.jsoneditor-selected", function() {
+        setTimeout(formatMenuInfo, 100);
+      });
+    };
 
   	json = {
 	   "weatherinfo": {
@@ -26605,6 +26614,7 @@ module.exports = function (css) {
 
     (function() {
       formatMenuInfo();
+      fixedOnModeChange();
     })();
 });
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
