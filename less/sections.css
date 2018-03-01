@@ -10,6 +10,7 @@
 #json-format #json-format-container .jsoneditor.jsoneditor-mode-tree div.jsoneditor textarea,
 #json-format #json-format-container .jsoneditor.jsoneditor-mode-tree .jsoneditor-schema-error {
   font-size: 15px !important;
+  line-height: 1.2em !important;
 }
 #json-format #json-format-container .jsoneditor .ace_editor.ace-jsoneditor {
   font-size: 15px !important;
@@ -23,6 +24,15 @@
 }
 #json-format #json-format-container .jsoneditor .jsoneditor-menu .jsoneditor-history {
   background-image: url("../sections/IconHistory.svg");
+}
+#json-format #json-format-container .jsoneditor .jsoneditor-menu ul.jsoneditor-menu li button.jsoneditor-type-modes div.jsoneditor-text {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+#json-format #json-format-container .jsoneditor .jsoneditor-navigation-bar div.jsoneditor-contextmenu ul li button.jsoneditor-selected,
+#json-format #json-format-container .jsoneditor .jsoneditor-navigation-bar div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover,
+#json-format #json-format-container .jsoneditor .jsoneditor-navigation-bar div.jsoneditor-contextmenu ul li button.jsoneditor-selected:focus {
+  background-color: #3883fa;
 }
 
 #show #what {

@@ -14344,7 +14344,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__node_modules_layui_layer_dist_layer_js__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__node_modules_layui_layer_dist_layer_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__node_modules_layui_layer_dist_layer_js__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__JsonFormat_js__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__TxtDiff_js__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__TxtDiff_js__ = __webpack_require__(94);
 
 
 //import "bootstrap";
@@ -26548,7 +26548,60 @@ module.exports = function (css) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_JSONEditor___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_JSONEditor__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_jsoneditor_dist_jsoneditor_css__ = __webpack_require__(89);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_jsoneditor_dist_jsoneditor_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__node_modules_jsoneditor_dist_jsoneditor_css__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_jsoneditor_src_js_util__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__node_modules_jsoneditor_src_js_util___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__node_modules_jsoneditor_src_js_util__);
 
+
+
+__WEBPACK_IMPORTED_MODULE_0_JSONEditor___default.a.prototype.setMode = function (mode) {
+  var container = this.container;
+  var options = __WEBPACK_IMPORTED_MODULE_2__node_modules_jsoneditor_src_js_util___default.a.extend({}, this.options);
+  var oldMode = options.mode;
+  var data;
+  var name;
+
+  options.mode = mode;
+  var config = __WEBPACK_IMPORTED_MODULE_0_JSONEditor___default.a.modes[mode];
+  if (config) {
+    try {
+      var asText = (config.data == 'text');
+      name = this.getName();
+      data = this[asText ? 'getText' : 'get'](); // get text or json
+
+      this.destroy();
+      __WEBPACK_IMPORTED_MODULE_2__node_modules_jsoneditor_src_js_util___default.a.clear(this);
+      __WEBPACK_IMPORTED_MODULE_2__node_modules_jsoneditor_src_js_util___default.a.extend(this, config.mixin);
+      this.create(container, options);
+
+      this.setName(name);
+      this[asText ? 'setText' : 'set'](data); // set text or json
+
+      if (typeof config.load === 'function') {
+        try {
+          config.load.call(this);
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
+
+      if (typeof options.onModeChange === 'function') {
+        try {
+          options.onModeChange(mode, oldMode);
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
+    }
+    catch (err) {
+      this._onError(err);
+    }
+  }
+  else {
+    throw new Error('Unknown mode "' + options.mode + '"');
+  }
+};
 
 /* harmony default export */ __webpack_exports__["a"] = (() => {
   	let container, options, json,
@@ -26567,6 +26620,8 @@ module.exports = function (css) {
     function formatMenuInfo() {
       $("button[type=button].jsoneditor-repair").remove();
       $("a.jsoneditor-poweredBy").remove();
+
+      $("button.jsoneditor-type-modes.jsoneditor-selected").attr("disabled", "disabled");
 
       // 增加历史记录按钮
       //$(".jsoneditor-menu > .jsoneditor-modes").after('<button type="button" class="jsoneditor-history" disabled=""></button>');
@@ -26589,12 +26644,6 @@ module.exports = function (css) {
       }
   	};
 
-    function fixedOnModeChange() {
-      $(document).on("click", "#json-format #json-format-container .jsoneditor-type-modes.jsoneditor-selected", function() {
-        setTimeout(formatMenuInfo, 100);
-      });
-    };
-
   	json = {
 	   "weatherinfo": {
 	     "city": "北京",
@@ -26614,7 +26663,6 @@ module.exports = function (css) {
 
     (function() {
       formatMenuInfo();
-      fixedOnModeChange();
     })();
 });
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
@@ -61560,11 +61608,1362 @@ module.exports = function escape(url) {
 
 /***/ }),
 /* 92 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var jsonlint = __webpack_require__(93);
+
+/**
+ * Parse JSON using the parser built-in in the browser.
+ * On exception, the jsonString is validated and a detailed error is thrown.
+ * @param {String} jsonString
+ * @return {JSON} json
+ */
+exports.parse = function parse(jsonString) {
+  try {
+    return JSON.parse(jsonString);
+  }
+  catch (err) {
+    // try to throw a more detailed error message using validate
+    exports.validate(jsonString);
+
+    // rethrow the original error
+    throw err;
+  }
+};
+
+/**
+ * Sanitize a JSON-like string containing. For example changes JavaScript
+ * notation into JSON notation.
+ * This function for example changes a string like "{a: 2, 'b': {c: 'd'}"
+ * into '{"a": 2, "b": {"c": "d"}'
+ * @param {string} jsString
+ * @returns {string} json
+ */
+exports.sanitize = function (jsString) {
+  // escape all single and double quotes inside strings
+  var chars = [];
+  var i = 0;
+
+  //If JSON starts with a function (characters/digits/"_-"), remove this function.
+  //This is useful for "stripping" JSONP objects to become JSON
+  //For example: /* some comment */ function_12321321 ( [{"a":"b"}] ); => [{"a":"b"}]
+  var match = jsString.match(/^\s*(\/\*(.|[\r\n])*?\*\/)?\s*[\da-zA-Z_$]+\s*\(([\s\S]*)\)\s*;?\s*$/);
+  if (match) {
+    jsString = match[3];
+  }
+
+  var controlChars = {
+    '\b': '\\b',
+    '\f': '\\f',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t'
+  };
+
+  var quote = '\'';
+  var quoteDbl = '"';
+  var quoteLeft = '\u2018';
+  var quoteRight = '\u2019';
+  var quoteDblLeft = '\u201C';
+  var quoteDblRight = '\u201D';
+  var graveAccent = '\u0060';
+  var acuteAccent = '\u00B4';
+
+  // helper functions to get the current/prev/next character
+  function curr () { return jsString.charAt(i);     }
+  function next()  { return jsString.charAt(i + 1); }
+  function prev()  { return jsString.charAt(i - 1); }
+
+  // get the last parsed non-whitespace character
+  function lastNonWhitespace () {
+    var p = chars.length - 1;
+
+    while (p >= 0) {
+      var pp = chars[p];
+      if (pp !== ' ' && pp !== '\n' && pp !== '\r' && pp !== '\t') { // non whitespace
+        return pp;
+      }
+      p--;
+    }
+
+    return '';
+  }
+
+  // skip a block comment '/* ... */'
+  function skipBlockComment () {
+    i += 2;
+    while (i < jsString.length && (curr() !== '*' || next() !== '/')) {
+      i++;
+    }
+    i += 2;
+  }
+
+  // skip a comment '// ...'
+  function skipComment () {
+    i += 2;
+    while (i < jsString.length && (curr() !== '\n')) {
+      i++;
+    }
+  }
+
+  // parse single or double quoted string
+  function parseString(endQuote) {
+    chars.push('"');
+    i++;
+    var c = curr();
+    while (i < jsString.length && c !== endQuote) {
+      if (c === '"' && prev() !== '\\') {
+        // unescaped double quote, escape it
+        chars.push('\\"');
+      }
+      else if (controlChars.hasOwnProperty(c)) {
+        // replace unescaped control characters with escaped ones
+        chars.push(controlChars[c])
+      }
+      else if (c === '\\') {
+        // remove the escape character when followed by a single quote ', not needed
+        i++;
+        c = curr();
+        if (c !== '\'') {
+          chars.push('\\');
+        }
+        chars.push(c);
+      }
+      else {
+        // regular character
+        chars.push(c);
+      }
+
+      i++;
+      c = curr();
+    }
+    if (c === endQuote) {
+      chars.push('"');
+      i++;
+    }
+  }
+
+  // parse an unquoted key
+  function parseKey() {
+    var specialValues = ['null', 'true', 'false'];
+    var key = '';
+    var c = curr();
+
+    var regexp = /[a-zA-Z_$\d]/; // letter, number, underscore, dollar character
+    while (regexp.test(c)) {
+      key += c;
+      i++;
+      c = curr();
+    }
+
+    if (specialValues.indexOf(key) === -1) {
+      chars.push('"' + key + '"');
+    }
+    else {
+      chars.push(key);
+    }
+  }
+
+  while(i < jsString.length) {
+    var c = curr();
+
+    if (c === '/' && next() === '*') {
+      skipBlockComment();
+    }
+    else if (c === '/' && next() === '/') {
+      skipComment();
+    }
+    else if (c === '\u00A0' || (c >= '\u2000' && c <= '\u200A') || c === '\u202F' || c === '\u205F' || c === '\u3000') {
+      // special white spaces (like non breaking space)
+      chars.push(' ')
+      i++
+    }
+    else if (c === quote) {
+      parseString(quote);
+    }
+    else if (c === quoteDbl) {
+      parseString(quoteDbl);
+    }
+    else if (c === graveAccent) {
+      parseString(acuteAccent);
+    }
+    else if (c === quoteLeft) {
+      parseString(quoteRight);
+    }
+    else if (c === quoteDblLeft) {
+      parseString(quoteDblRight);
+    }
+    else if (/[a-zA-Z_$]/.test(c) && ['{', ','].indexOf(lastNonWhitespace()) !== -1) {
+      // an unquoted object key (like a in '{a:2}')
+      parseKey();
+    }
+    else {
+      chars.push(c);
+      i++;
+    }
+  }
+
+  return chars.join('');
+};
+
+/**
+ * Escape unicode characters.
+ * For example input '\u2661' (length 1) will output '\\u2661' (length 5).
+ * @param {string} text
+ * @return {string}
+ */
+exports.escapeUnicodeChars = function (text) {
+  // see https://www.wikiwand.com/en/UTF-16
+  // note: we leave surrogate pairs as two individual chars,
+  // as JSON doesn't interpret them as a single unicode char.
+  return text.replace(/[\u007F-\uFFFF]/g, function(c) {
+    return '\\u'+('0000' + c.charCodeAt(0).toString(16)).slice(-4);
+  })
+};
+
+/**
+ * Validate a string containing a JSON object
+ * This method uses JSONLint to validate the String. If JSONLint is not
+ * available, the built-in JSON parser of the browser is used.
+ * @param {String} jsonString   String with an (invalid) JSON object
+ * @throws Error
+ */
+exports.validate = function validate(jsonString) {
+  if (typeof(jsonlint) != 'undefined') {
+    jsonlint.parse(jsonString);
+  }
+  else {
+    JSON.parse(jsonString);
+  }
+};
+
+/**
+ * Extend object a with the properties of object b
+ * @param {Object} a
+ * @param {Object} b
+ * @return {Object} a
+ */
+exports.extend = function extend(a, b) {
+  for (var prop in b) {
+    if (b.hasOwnProperty(prop)) {
+      a[prop] = b[prop];
+    }
+  }
+  return a;
+};
+
+/**
+ * Remove all properties from object a
+ * @param {Object} a
+ * @return {Object} a
+ */
+exports.clear = function clear (a) {
+  for (var prop in a) {
+    if (a.hasOwnProperty(prop)) {
+      delete a[prop];
+    }
+  }
+  return a;
+};
+
+/**
+ * Get the type of an object
+ * @param {*} object
+ * @return {String} type
+ */
+exports.type = function type (object) {
+  if (object === null) {
+    return 'null';
+  }
+  if (object === undefined) {
+    return 'undefined';
+  }
+  if ((object instanceof Number) || (typeof object === 'number')) {
+    return 'number';
+  }
+  if ((object instanceof String) || (typeof object === 'string')) {
+    return 'string';
+  }
+  if ((object instanceof Boolean) || (typeof object === 'boolean')) {
+    return 'boolean';
+  }
+  if ((object instanceof RegExp) || (typeof object === 'regexp')) {
+    return 'regexp';
+  }
+  if (exports.isArray(object)) {
+    return 'array';
+  }
+
+  return 'object';
+};
+
+/**
+ * Test whether a text contains a url (matches when a string starts
+ * with 'http://*' or 'https://*' and has no whitespace characters)
+ * @param {String} text
+ */
+var isUrlRegex = /^https?:\/\/\S+$/;
+exports.isUrl = function isUrl (text) {
+  return (typeof text == 'string' || text instanceof String) &&
+      isUrlRegex.test(text);
+};
+
+/**
+ * Tes whether given object is an Array
+ * @param {*} obj
+ * @returns {boolean} returns true when obj is an array
+ */
+exports.isArray = function (obj) {
+  return Object.prototype.toString.call(obj) === '[object Array]';
+};
+
+/**
+ * Retrieve the absolute left value of a DOM element
+ * @param {Element} elem    A dom element, for example a div
+ * @return {Number} left    The absolute left position of this element
+ *                          in the browser page.
+ */
+exports.getAbsoluteLeft = function getAbsoluteLeft(elem) {
+  var rect = elem.getBoundingClientRect();
+  return rect.left + window.pageXOffset || document.scrollLeft || 0;
+};
+
+/**
+ * Retrieve the absolute top value of a DOM element
+ * @param {Element} elem    A dom element, for example a div
+ * @return {Number} top     The absolute top position of this element
+ *                          in the browser page.
+ */
+exports.getAbsoluteTop = function getAbsoluteTop(elem) {
+  var rect = elem.getBoundingClientRect();
+  return rect.top + window.pageYOffset || document.scrollTop || 0;
+};
+
+/**
+ * add a className to the given elements style
+ * @param {Element} elem
+ * @param {String} className
+ */
+exports.addClassName = function addClassName(elem, className) {
+  var classes = elem.className.split(' ');
+  if (classes.indexOf(className) == -1) {
+    classes.push(className); // add the class to the array
+    elem.className = classes.join(' ');
+  }
+};
+
+/**
+ * add a className to the given elements style
+ * @param {Element} elem
+ * @param {String} className
+ */
+exports.removeClassName = function removeClassName(elem, className) {
+  var classes = elem.className.split(' ');
+  var index = classes.indexOf(className);
+  if (index != -1) {
+    classes.splice(index, 1); // remove the class from the array
+    elem.className = classes.join(' ');
+  }
+};
+
+/**
+ * Strip the formatting from the contents of a div
+ * the formatting from the div itself is not stripped, only from its childs.
+ * @param {Element} divElement
+ */
+exports.stripFormatting = function stripFormatting(divElement) {
+  var childs = divElement.childNodes;
+  for (var i = 0, iMax = childs.length; i < iMax; i++) {
+    var child = childs[i];
+
+    // remove the style
+    if (child.style) {
+      // TODO: test if child.attributes does contain style
+      child.removeAttribute('style');
+    }
+
+    // remove all attributes
+    var attributes = child.attributes;
+    if (attributes) {
+      for (var j = attributes.length - 1; j >= 0; j--) {
+        var attribute = attributes[j];
+        if (attribute.specified === true) {
+          child.removeAttribute(attribute.name);
+        }
+      }
+    }
+
+    // recursively strip childs
+    exports.stripFormatting(child);
+  }
+};
+
+/**
+ * Set focus to the end of an editable div
+ * code from Nico Burns
+ * http://stackoverflow.com/users/140293/nico-burns
+ * http://stackoverflow.com/questions/1125292/how-to-move-cursor-to-end-of-contenteditable-entity
+ * @param {Element} contentEditableElement   A content editable div
+ */
+exports.setEndOfContentEditable = function setEndOfContentEditable(contentEditableElement) {
+  var range, selection;
+  if(document.createRange) {
+    range = document.createRange();//Create a range (a range is a like the selection but invisible)
+    range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
+    range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
+    selection = window.getSelection();//get the selection object (allows you to change selection)
+    selection.removeAllRanges();//remove any selections already made
+    selection.addRange(range);//make the range you have just created the visible selection
+  }
+};
+
+/**
+ * Select all text of a content editable div.
+ * http://stackoverflow.com/a/3806004/1262753
+ * @param {Element} contentEditableElement   A content editable div
+ */
+exports.selectContentEditable = function selectContentEditable(contentEditableElement) {
+  if (!contentEditableElement || contentEditableElement.nodeName != 'DIV') {
+    return;
+  }
+
+  var sel, range;
+  if (window.getSelection && document.createRange) {
+    range = document.createRange();
+    range.selectNodeContents(contentEditableElement);
+    sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+};
+
+/**
+ * Get text selection
+ * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
+ * @return {Range | TextRange | null} range
+ */
+exports.getSelection = function getSelection() {
+  if (window.getSelection) {
+    var sel = window.getSelection();
+    if (sel.getRangeAt && sel.rangeCount) {
+      return sel.getRangeAt(0);
+    }
+  }
+  return null;
+};
+
+/**
+ * Set text selection
+ * http://stackoverflow.com/questions/4687808/contenteditable-selected-text-save-and-restore
+ * @param {Range | TextRange | null} range
+ */
+exports.setSelection = function setSelection(range) {
+  if (range) {
+    if (window.getSelection) {
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }
+};
+
+/**
+ * Get selected text range
+ * @return {Object} params  object containing parameters:
+ *                              {Number}  startOffset
+ *                              {Number}  endOffset
+ *                              {Element} container  HTML element holding the
+ *                                                   selected text element
+ *                          Returns null if no text selection is found
+ */
+exports.getSelectionOffset = function getSelectionOffset() {
+  var range = exports.getSelection();
+
+  if (range && 'startOffset' in range && 'endOffset' in range &&
+      range.startContainer && (range.startContainer == range.endContainer)) {
+    return {
+      startOffset: range.startOffset,
+      endOffset: range.endOffset,
+      container: range.startContainer.parentNode
+    };
+  }
+
+  return null;
+};
+
+/**
+ * Set selected text range in given element
+ * @param {Object} params   An object containing:
+ *                              {Element} container
+ *                              {Number} startOffset
+ *                              {Number} endOffset
+ */
+exports.setSelectionOffset = function setSelectionOffset(params) {
+  if (document.createRange && window.getSelection) {
+    var selection = window.getSelection();
+    if(selection) {
+      var range = document.createRange();
+
+      if (!params.container.firstChild) {
+        params.container.appendChild(document.createTextNode(''));
+      }
+
+      // TODO: do not suppose that the first child of the container is a textnode,
+      //       but recursively find the textnodes
+      range.setStart(params.container.firstChild, params.startOffset);
+      range.setEnd(params.container.firstChild, params.endOffset);
+
+      exports.setSelection(range);
+    }
+  }
+};
+
+/**
+ * Get the inner text of an HTML element (for example a div element)
+ * @param {Element} element
+ * @param {Object} [buffer]
+ * @return {String} innerText
+ */
+exports.getInnerText = function getInnerText(element, buffer) {
+  var first = (buffer == undefined);
+  if (first) {
+    buffer = {
+      'text': '',
+      'flush': function () {
+        var text = this.text;
+        this.text = '';
+        return text;
+      },
+      'set': function (text) {
+        this.text = text;
+      }
+    };
+  }
+
+  // text node
+  if (element.nodeValue) {
+    return buffer.flush() + element.nodeValue;
+  }
+
+  // divs or other HTML elements
+  if (element.hasChildNodes()) {
+    var childNodes = element.childNodes;
+    var innerText = '';
+
+    for (var i = 0, iMax = childNodes.length; i < iMax; i++) {
+      var child = childNodes[i];
+
+      if (child.nodeName == 'DIV' || child.nodeName == 'P') {
+        var prevChild = childNodes[i - 1];
+        var prevName = prevChild ? prevChild.nodeName : undefined;
+        if (prevName && prevName != 'DIV' && prevName != 'P' && prevName != 'BR') {
+          innerText += '\n';
+          buffer.flush();
+        }
+        innerText += exports.getInnerText(child, buffer);
+        buffer.set('\n');
+      }
+      else if (child.nodeName == 'BR') {
+        innerText += buffer.flush();
+        buffer.set('\n');
+      }
+      else {
+        innerText += exports.getInnerText(child, buffer);
+      }
+    }
+
+    return innerText;
+  }
+  else {
+    if (element.nodeName == 'P' && exports.getInternetExplorerVersion() != -1) {
+      // On Internet Explorer, a <p> with hasChildNodes()==false is
+      // rendered with a new line. Note that a <p> with
+      // hasChildNodes()==true is rendered without a new line
+      // Other browsers always ensure there is a <br> inside the <p>,
+      // and if not, the <p> does not render a new line
+      return buffer.flush();
+    }
+  }
+
+  // br or unknown
+  return '';
+};
+
+/**
+ * Returns the version of Internet Explorer or a -1
+ * (indicating the use of another browser).
+ * Source: http://msdn.microsoft.com/en-us/library/ms537509(v=vs.85).aspx
+ * @return {Number} Internet Explorer version, or -1 in case of an other browser
+ */
+exports.getInternetExplorerVersion = function getInternetExplorerVersion() {
+  if (_ieVersion == -1) {
+    var rv = -1; // Return value assumes failure.
+    if (navigator.appName == 'Microsoft Internet Explorer')
+    {
+      var ua = navigator.userAgent;
+      var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+      if (re.exec(ua) != null) {
+        rv = parseFloat( RegExp.$1 );
+      }
+    }
+
+    _ieVersion = rv;
+  }
+
+  return _ieVersion;
+};
+
+/**
+ * Test whether the current browser is Firefox
+ * @returns {boolean} isFirefox
+ */
+exports.isFirefox = function isFirefox () {
+  return (navigator.userAgent.indexOf("Firefox") != -1);
+};
+
+/**
+ * cached internet explorer version
+ * @type {Number}
+ * @private
+ */
+var _ieVersion = -1;
+
+/**
+ * Add and event listener. Works for all browsers
+ * @param {Element}     element    An html element
+ * @param {string}      action     The action, for example "click",
+ *                                 without the prefix "on"
+ * @param {function}    listener   The callback function to be executed
+ * @param {boolean}     [useCapture] false by default
+ * @return {function}   the created event listener
+ */
+exports.addEventListener = function addEventListener(element, action, listener, useCapture) {
+  if (element.addEventListener) {
+    if (useCapture === undefined)
+      useCapture = false;
+
+    if (action === "mousewheel" && exports.isFirefox()) {
+      action = "DOMMouseScroll";  // For Firefox
+    }
+
+    element.addEventListener(action, listener, useCapture);
+    return listener;
+  } else if (element.attachEvent) {
+    // Old IE browsers
+    var f = function () {
+      return listener.call(element, window.event);
+    };
+    element.attachEvent("on" + action, f);
+    return f;
+  }
+};
+
+/**
+ * Remove an event listener from an element
+ * @param {Element}  element   An html dom element
+ * @param {string}   action    The name of the event, for example "mousedown"
+ * @param {function} listener  The listener function
+ * @param {boolean}  [useCapture]   false by default
+ */
+exports.removeEventListener = function removeEventListener(element, action, listener, useCapture) {
+  if (element.removeEventListener) {
+    if (useCapture === undefined)
+      useCapture = false;
+
+    if (action === "mousewheel" && exports.isFirefox()) {
+      action = "DOMMouseScroll";  // For Firefox
+    }
+
+    element.removeEventListener(action, listener, useCapture);
+  } else if (element.detachEvent) {
+    // Old IE browsers
+    element.detachEvent("on" + action, listener);
+  }
+};
+
+/**
+ * Parse a JSON path like '.items[3].name' into an array
+ * @param {string} jsonPath
+ * @return {Array}
+ */
+exports.parsePath = function parsePath(jsonPath) {
+  var prop, remainder;
+
+  if (jsonPath.length === 0) {
+    return [];
+  }
+
+  // find a match like '.prop'
+  var match = jsonPath.match(/^\.(\w+)/);
+  if (match) {
+    prop = match[1];
+    remainder = jsonPath.substr(prop.length + 1);
+  }
+  else if (jsonPath[0] === '[') {
+    // find a match like
+    var end = jsonPath.indexOf(']');
+    if (end === -1) {
+      throw new SyntaxError('Character ] expected in path');
+    }
+    if (end === 1) {
+      throw new SyntaxError('Index expected after [');
+    }
+
+    var value = jsonPath.substring(1, end);
+    if (value[0] === '\'') {
+      // ajv produces string prop names with single quotes, so we need
+      // to reformat them into valid double-quoted JSON strings
+      value = '\"' + value.substring(1, value.length - 1) + '\"';
+    }
+
+    prop = value === '*' ? value : JSON.parse(value); // parse string and number
+    remainder = jsonPath.substr(end + 1);
+  }
+  else {
+    throw new SyntaxError('Failed to parse path');
+  }
+
+  return [prop].concat(parsePath(remainder))
+};
+
+/**
+ * Improve the error message of a JSON schema error
+ * @param {Object} error
+ * @return {Object} The error
+ */
+exports.improveSchemaError = function (error) {
+  if (error.keyword === 'enum' && Array.isArray(error.schema)) {
+    var enums = error.schema;
+    if (enums) {
+      enums = enums.map(function (value) {
+        return JSON.stringify(value);
+      });
+
+      if (enums.length > 5) {
+        var more = ['(' + (enums.length - 5) + ' more...)'];
+        enums = enums.slice(0, 5);
+        enums.push(more);
+      }
+      error.message = 'should be equal to one of: ' + enums.join(', ');
+    }
+  }
+
+  if (error.keyword === 'additionalProperties') {
+    error.message = 'should NOT have additional property: ' + error.params.additionalProperty;
+  }
+
+  return error;
+};
+
+/**
+ * Test whether the child rect fits completely inside the parent rect.
+ * @param {ClientRect} parent
+ * @param {ClientRect} child
+ * @param {number} margin
+ */
+exports.insideRect = function (parent, child, margin) {
+  var _margin = margin !== undefined ? margin : 0;
+  return child.left   - _margin >= parent.left
+      && child.right  + _margin <= parent.right
+      && child.top    - _margin >= parent.top
+      && child.bottom + _margin <= parent.bottom;
+};
+
+/**
+ * Returns a function, that, as long as it continues to be invoked, will not
+ * be triggered. The function will be called after it stops being called for
+ * N milliseconds.
+ *
+ * Source: https://davidwalsh.name/javascript-debounce-function
+ *
+ * @param {function} func
+ * @param {number} wait                 Number in milliseconds
+ * @param {boolean} [immediate=false]   If `immediate` is passed, trigger the
+ *                                      function on the leading edge, instead
+ *                                      of the trailing.
+ * @return {function} Return the debounced function
+ */
+exports.debounce = function debounce(func, wait, immediate) {
+  var timeout;
+  return function() {
+    var context = this, args = arguments;
+    var later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+};
+
+/**
+ * Determines the difference between two texts.
+ * Can only detect one removed or inserted block of characters.
+ * @param {string} oldText
+ * @param {string} newText
+ * @return {{start: number, end: number}} Returns the start and end
+ *                                        of the changed part in newText.
+ */
+exports.textDiff = function textDiff(oldText, newText) {
+  var len = newText.length;
+  var start = 0;
+  var oldEnd = oldText.length;
+  var newEnd = newText.length;
+
+  while (newText.charAt(start) === oldText.charAt(start)
+  && start < len) {
+    start++;
+  }
+
+  while (newText.charAt(newEnd - 1) === oldText.charAt(oldEnd - 1)
+  && newEnd > start && oldEnd > 0) {
+    newEnd--;
+    oldEnd--;
+  }
+
+  return {start: start, end: newEnd};
+};
+
+
+/**
+ * Return an object with the selection range or cursor position (if both have the same value)
+ * Support also old browsers (IE8-)
+ * Source: http://ourcodeworld.com/articles/read/282/how-to-get-the-current-cursor-position-and-selection-within-a-text-input-or-textarea-in-javascript
+ * @param {DOMElement} el A dom element of a textarea or input text.
+ * @return {Object} reference Object with 2 properties (start and end) with the identifier of the location of the cursor and selected text.
+ **/
+exports.getInputSelection = function(el) {
+  var start = 0, end = 0, normalizedValue, range, textInputRange, len, endRange;
+
+  if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
+      start = el.selectionStart;
+      end = el.selectionEnd;
+  } else {
+      range = document.selection.createRange();
+
+      if (range && range.parentElement() == el) {
+          len = el.value.length;
+          normalizedValue = el.value.replace(/\r\n/g, "\n");
+
+          // Create a working TextRange that lives only in the input
+          textInputRange = el.createTextRange();
+          textInputRange.moveToBookmark(range.getBookmark());
+
+          // Check if the start and end of the selection are at the very end
+          // of the input, since moveStart/moveEnd doesn't return what we want
+          // in those cases
+          endRange = el.createTextRange();
+          endRange.collapse(false);
+
+          if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+              start = end = len;
+          } else {
+              start = -textInputRange.moveStart("character", -len);
+              start += normalizedValue.slice(0, start).split("\n").length - 1;
+
+              if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
+                  end = len;
+              } else {
+                  end = -textInputRange.moveEnd("character", -len);
+                  end += normalizedValue.slice(0, end).split("\n").length - 1;
+              }
+          }
+      }
+  }
+
+  var textTillCaret = el.value.substring(0,end);
+  var row = (textTillCaret.match(/\n/g) || []).length + 1;
+  var col = textTillCaret.length - textTillCaret.lastIndexOf("\n");
+
+  return {
+      start: start,
+      end: end,
+      col: col,
+      row: row
+  };
+}
+
+
+if (typeof Element !== 'undefined') {
+  // Polyfill for array remove
+  (function () {
+    function polyfill (item) {
+      if (item.hasOwnProperty('remove')) {
+        return;
+      }
+      Object.defineProperty(item, 'remove', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: function remove() {
+          if (this.parentNode != null)
+            this.parentNode.removeChild(this);
+        }
+      });
+    }
+
+    if (typeof Element !== 'undefined')       { polyfill(Element.prototype); }
+    if (typeof CharacterData !== 'undefined') { polyfill(CharacterData.prototype); }
+    if (typeof DocumentType !== 'undefined')  { polyfill(DocumentType.prototype); }
+  })();
+}
+
+
+// Polyfill for startsWith
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+
+// Polyfill for Array.find
+if (!Array.prototype.find) {
+  Array.prototype.find = function(callback) {    
+    for (var i = 0; i < this.length; i++) {
+      var element = this[i];
+      if ( callback.call(this, element, i, this) ) {
+        return element;
+      }
+    }
+  }
+}
+
+/***/ }),
+/* 93 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* Jison generated parser */
+var jsonlint = (function(){
+var parser = {trace: function trace() { },
+yy: {},
+symbols_: {"error":2,"JSONString":3,"STRING":4,"JSONNumber":5,"NUMBER":6,"JSONNullLiteral":7,"NULL":8,"JSONBooleanLiteral":9,"TRUE":10,"FALSE":11,"JSONText":12,"JSONValue":13,"EOF":14,"JSONObject":15,"JSONArray":16,"{":17,"}":18,"JSONMemberList":19,"JSONMember":20,":":21,",":22,"[":23,"]":24,"JSONElementList":25,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"STRING",6:"NUMBER",8:"NULL",10:"TRUE",11:"FALSE",14:"EOF",17:"{",18:"}",21:":",22:",",23:"[",24:"]"},
+productions_: [0,[3,1],[5,1],[7,1],[9,1],[9,1],[12,2],[13,1],[13,1],[13,1],[13,1],[13,1],[13,1],[15,2],[15,3],[20,3],[19,1],[19,3],[16,2],[16,3],[25,1],[25,3]],
+performAction: function anonymous(yytext,yyleng,yylineno,yy,yystate,$$,_$) {
+
+var $0 = $$.length - 1;
+switch (yystate) {
+case 1: // replace escaped characters with actual character
+          this.$ = yytext.replace(/\\(\\|")/g, "$"+"1")
+                     .replace(/\\n/g,'\n')
+                     .replace(/\\r/g,'\r')
+                     .replace(/\\t/g,'\t')
+                     .replace(/\\v/g,'\v')
+                     .replace(/\\f/g,'\f')
+                     .replace(/\\b/g,'\b');
+        
+break;
+case 2:this.$ = Number(yytext);
+break;
+case 3:this.$ = null;
+break;
+case 4:this.$ = true;
+break;
+case 5:this.$ = false;
+break;
+case 6:return this.$ = $$[$0-1];
+break;
+case 13:this.$ = {};
+break;
+case 14:this.$ = $$[$0-1];
+break;
+case 15:this.$ = [$$[$0-2], $$[$0]];
+break;
+case 16:this.$ = {}; this.$[$$[$0][0]] = $$[$0][1];
+break;
+case 17:this.$ = $$[$0-2]; $$[$0-2][$$[$0][0]] = $$[$0][1];
+break;
+case 18:this.$ = [];
+break;
+case 19:this.$ = $$[$0-1];
+break;
+case 20:this.$ = [$$[$0]];
+break;
+case 21:this.$ = $$[$0-2]; $$[$0-2].push($$[$0]);
+break;
+}
+},
+table: [{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],12:1,13:2,15:7,16:8,17:[1,14],23:[1,15]},{1:[3]},{14:[1,16]},{14:[2,7],18:[2,7],22:[2,7],24:[2,7]},{14:[2,8],18:[2,8],22:[2,8],24:[2,8]},{14:[2,9],18:[2,9],22:[2,9],24:[2,9]},{14:[2,10],18:[2,10],22:[2,10],24:[2,10]},{14:[2,11],18:[2,11],22:[2,11],24:[2,11]},{14:[2,12],18:[2,12],22:[2,12],24:[2,12]},{14:[2,3],18:[2,3],22:[2,3],24:[2,3]},{14:[2,4],18:[2,4],22:[2,4],24:[2,4]},{14:[2,5],18:[2,5],22:[2,5],24:[2,5]},{14:[2,1],18:[2,1],21:[2,1],22:[2,1],24:[2,1]},{14:[2,2],18:[2,2],22:[2,2],24:[2,2]},{3:20,4:[1,12],18:[1,17],19:18,20:19},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:23,15:7,16:8,17:[1,14],23:[1,15],24:[1,21],25:22},{1:[2,6]},{14:[2,13],18:[2,13],22:[2,13],24:[2,13]},{18:[1,24],22:[1,25]},{18:[2,16],22:[2,16]},{21:[1,26]},{14:[2,18],18:[2,18],22:[2,18],24:[2,18]},{22:[1,28],24:[1,27]},{22:[2,20],24:[2,20]},{14:[2,14],18:[2,14],22:[2,14],24:[2,14]},{3:20,4:[1,12],20:29},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:30,15:7,16:8,17:[1,14],23:[1,15]},{14:[2,19],18:[2,19],22:[2,19],24:[2,19]},{3:5,4:[1,12],5:6,6:[1,13],7:3,8:[1,9],9:4,10:[1,10],11:[1,11],13:31,15:7,16:8,17:[1,14],23:[1,15]},{18:[2,17],22:[2,17]},{18:[2,15],22:[2,15]},{22:[2,21],24:[2,21]}],
+defaultActions: {16:[2,6]},
+parseError: function parseError(str, hash) {
+    throw new Error(str);
+},
+parse: function parse(input) {
+    var self = this,
+        stack = [0],
+        vstack = [null], // semantic value stack
+        lstack = [], // location stack
+        table = this.table,
+        yytext = '',
+        yylineno = 0,
+        yyleng = 0,
+        recovering = 0,
+        TERROR = 2,
+        EOF = 1;
+
+    //this.reductionCount = this.shiftCount = 0;
+
+    this.lexer.setInput(input);
+    this.lexer.yy = this.yy;
+    this.yy.lexer = this.lexer;
+    if (typeof this.lexer.yylloc == 'undefined')
+        this.lexer.yylloc = {};
+    var yyloc = this.lexer.yylloc;
+    lstack.push(yyloc);
+
+    if (typeof this.yy.parseError === 'function')
+        this.parseError = this.yy.parseError;
+
+    function popStack (n) {
+        stack.length = stack.length - 2*n;
+        vstack.length = vstack.length - n;
+        lstack.length = lstack.length - n;
+    }
+
+    function lex() {
+        var token;
+        token = self.lexer.lex() || 1; // $end = 1
+        // if token isn't its numeric value, convert
+        if (typeof token !== 'number') {
+            token = self.symbols_[token] || token;
+        }
+        return token;
+    }
+
+    var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
+    while (true) {
+        // retreive state number from top of stack
+        state = stack[stack.length-1];
+
+        // use default actions if available
+        if (this.defaultActions[state]) {
+            action = this.defaultActions[state];
+        } else {
+            if (symbol == null)
+                symbol = lex();
+            // read action for current state and first input
+            action = table[state] && table[state][symbol];
+        }
+
+        // handle parse error
+        _handle_error:
+        if (typeof action === 'undefined' || !action.length || !action[0]) {
+
+            if (!recovering) {
+                // Report error
+                expected = [];
+                for (p in table[state]) if (this.terminals_[p] && p > 2) {
+                    expected.push("'"+this.terminals_[p]+"'");
+                }
+                var errStr = '';
+                if (this.lexer.showPosition) {
+                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+expected.join(', ') + ", got '" + this.terminals_[symbol]+ "'";
+                } else {
+                    errStr = 'Parse error on line '+(yylineno+1)+": Unexpected " +
+                                  (symbol == 1 /*EOF*/ ? "end of input" :
+                                              ("'"+(this.terminals_[symbol] || symbol)+"'"));
+                }
+                this.parseError(errStr,
+                    {text: this.lexer.match, token: this.terminals_[symbol] || symbol, line: this.lexer.yylineno, loc: yyloc, expected: expected});
+            }
+
+            // just recovered from another error
+            if (recovering == 3) {
+                if (symbol == EOF) {
+                    throw new Error(errStr || 'Parsing halted.');
+                }
+
+                // discard current lookahead and grab another
+                yyleng = this.lexer.yyleng;
+                yytext = this.lexer.yytext;
+                yylineno = this.lexer.yylineno;
+                yyloc = this.lexer.yylloc;
+                symbol = lex();
+            }
+
+            // try to recover from error
+            while (1) {
+                // check for error recovery rule in this state
+                if ((TERROR.toString()) in table[state]) {
+                    break;
+                }
+                if (state == 0) {
+                    throw new Error(errStr || 'Parsing halted.');
+                }
+                popStack(1);
+                state = stack[stack.length-1];
+            }
+
+            preErrorSymbol = symbol; // save the lookahead token
+            symbol = TERROR;         // insert generic error symbol as new lookahead
+            state = stack[stack.length-1];
+            action = table[state] && table[state][TERROR];
+            recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
+        }
+
+        // this shouldn't happen, unless resolve defaults are off
+        if (action[0] instanceof Array && action.length > 1) {
+            throw new Error('Parse Error: multiple actions possible at state: '+state+', token: '+symbol);
+        }
+
+        switch (action[0]) {
+
+            case 1: // shift
+                //this.shiftCount++;
+
+                stack.push(symbol);
+                vstack.push(this.lexer.yytext);
+                lstack.push(this.lexer.yylloc);
+                stack.push(action[1]); // push state
+                symbol = null;
+                if (!preErrorSymbol) { // normal execution/no error
+                    yyleng = this.lexer.yyleng;
+                    yytext = this.lexer.yytext;
+                    yylineno = this.lexer.yylineno;
+                    yyloc = this.lexer.yylloc;
+                    if (recovering > 0)
+                        recovering--;
+                } else { // error just occurred, resume old lookahead f/ before error
+                    symbol = preErrorSymbol;
+                    preErrorSymbol = null;
+                }
+                break;
+
+            case 2: // reduce
+                //this.reductionCount++;
+
+                len = this.productions_[action[1]][1];
+
+                // perform semantic action
+                yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
+                // default location, uses first token for firsts, last for lasts
+                yyval._$ = {
+                    first_line: lstack[lstack.length-(len||1)].first_line,
+                    last_line: lstack[lstack.length-1].last_line,
+                    first_column: lstack[lstack.length-(len||1)].first_column,
+                    last_column: lstack[lstack.length-1].last_column
+                };
+                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, action[1], vstack, lstack);
+
+                if (typeof r !== 'undefined') {
+                    return r;
+                }
+
+                // pop off stack
+                if (len) {
+                    stack = stack.slice(0,-1*len*2);
+                    vstack = vstack.slice(0, -1*len);
+                    lstack = lstack.slice(0, -1*len);
+                }
+
+                stack.push(this.productions_[action[1]][0]);    // push nonterminal (reduce)
+                vstack.push(yyval.$);
+                lstack.push(yyval._$);
+                // goto new state = table[STATE][NONTERMINAL]
+                newState = table[stack[stack.length-2]][stack[stack.length-1]];
+                stack.push(newState);
+                break;
+
+            case 3: // accept
+                return true;
+        }
+
+    }
+
+    return true;
+}};
+/* Jison generated lexer */
+var lexer = (function(){
+var lexer = ({EOF:1,
+parseError:function parseError(str, hash) {
+        if (this.yy.parseError) {
+            this.yy.parseError(str, hash);
+        } else {
+            throw new Error(str);
+        }
+    },
+setInput:function (input) {
+        this._input = input;
+        this._more = this._less = this.done = false;
+        this.yylineno = this.yyleng = 0;
+        this.yytext = this.matched = this.match = '';
+        this.conditionStack = ['INITIAL'];
+        this.yylloc = {first_line:1,first_column:0,last_line:1,last_column:0};
+        return this;
+    },
+input:function () {
+        var ch = this._input[0];
+        this.yytext+=ch;
+        this.yyleng++;
+        this.match+=ch;
+        this.matched+=ch;
+        var lines = ch.match(/\n/);
+        if (lines) this.yylineno++;
+        this._input = this._input.slice(1);
+        return ch;
+    },
+unput:function (ch) {
+        this._input = ch + this._input;
+        return this;
+    },
+more:function () {
+        this._more = true;
+        return this;
+    },
+less:function (n) {
+        this._input = this.match.slice(n) + this._input;
+    },
+pastInput:function () {
+        var past = this.matched.substr(0, this.matched.length - this.match.length);
+        return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
+    },
+upcomingInput:function () {
+        var next = this.match;
+        if (next.length < 20) {
+            next += this._input.substr(0, 20-next.length);
+        }
+        return (next.substr(0,20)+(next.length > 20 ? '...':'')).replace(/\n/g, "");
+    },
+showPosition:function () {
+        var pre = this.pastInput();
+        var c = new Array(pre.length + 1).join("-");
+        return pre + this.upcomingInput() + "\n" + c+"^";
+    },
+next:function () {
+        if (this.done) {
+            return this.EOF;
+        }
+        if (!this._input) this.done = true;
+
+        var token,
+            match,
+            tempMatch,
+            index,
+            col,
+            lines;
+        if (!this._more) {
+            this.yytext = '';
+            this.match = '';
+        }
+        var rules = this._currentRules();
+        for (var i=0;i < rules.length; i++) {
+            tempMatch = this._input.match(this.rules[rules[i]]);
+            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+                match = tempMatch;
+                index = i;
+                if (!this.options.flex) break;
+            }
+        }
+        if (match) {
+            lines = match[0].match(/\n.*/g);
+            if (lines) this.yylineno += lines.length;
+            this.yylloc = {first_line: this.yylloc.last_line,
+                           last_line: this.yylineno+1,
+                           first_column: this.yylloc.last_column,
+                           last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
+            this.yytext += match[0];
+            this.match += match[0];
+            this.yyleng = this.yytext.length;
+            this._more = false;
+            this._input = this._input.slice(match[0].length);
+            this.matched += match[0];
+            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+            if (this.done && this._input) this.done = false;
+            if (token) return token;
+            else return;
+        }
+        if (this._input === "") {
+            return this.EOF;
+        } else {
+            this.parseError('Lexical error on line '+(this.yylineno+1)+'. Unrecognized text.\n'+this.showPosition(), 
+                    {text: "", token: null, line: this.yylineno});
+        }
+    },
+lex:function lex() {
+        var r = this.next();
+        if (typeof r !== 'undefined') {
+            return r;
+        } else {
+            return this.lex();
+        }
+    },
+begin:function begin(condition) {
+        this.conditionStack.push(condition);
+    },
+popState:function popState() {
+        return this.conditionStack.pop();
+    },
+_currentRules:function _currentRules() {
+        return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
+    },
+topState:function () {
+        return this.conditionStack[this.conditionStack.length-2];
+    },
+pushState:function begin(condition) {
+        this.begin(condition);
+    }});
+lexer.options = {};
+lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
+
+var YYSTATE=YY_START
+switch($avoiding_name_collisions) {
+case 0:/* skip whitespace */
+break;
+case 1:return 6
+break;
+case 2:yy_.yytext = yy_.yytext.substr(1,yy_.yyleng-2); return 4
+break;
+case 3:return 17
+break;
+case 4:return 18
+break;
+case 5:return 23
+break;
+case 6:return 24
+break;
+case 7:return 22
+break;
+case 8:return 21
+break;
+case 9:return 10
+break;
+case 10:return 11
+break;
+case 11:return 8
+break;
+case 12:return 14
+break;
+case 13:return 'INVALID'
+break;
+}
+};
+lexer.rules = [/^(?:\s+)/,/^(?:(-?([0-9]|[1-9][0-9]+))(\.[0-9]+)?([eE][-+]?[0-9]+)?\b)/,/^(?:"(?:\\[\\"bfnrt/]|\\u[a-fA-F0-9]{4}|[^\\\0-\x09\x0a-\x1f"])*")/,/^(?:\{)/,/^(?:\})/,/^(?:\[)/,/^(?:\])/,/^(?:,)/,/^(?::)/,/^(?:true\b)/,/^(?:false\b)/,/^(?:null\b)/,/^(?:$)/,/^(?:.)/];
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13],"inclusive":true}};
+
+
+;
+return lexer;})()
+parser.lexer = lexer;
+return parser;
+})();
+if (true) {
+  exports.parser = jsonlint;
+  exports.parse = jsonlint.parse.bind(jsonlint);
+}
+
+/***/ }),
+/* 94 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Tools_js__ = __webpack_require__(94);
-var JsDiff = __webpack_require__(93);
+/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Tools_js__ = __webpack_require__(96);
+var JsDiff = __webpack_require__(95);
 
 const tools = new __WEBPACK_IMPORTED_MODULE_0__Tools_js__["a" /* default */]();
 function handleLine(leftTxt, rightTxt, resultObj) {
@@ -61740,7 +63139,7 @@ function handleChar(leftTxt, rightTxt, resultObj) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(0)))
 
 /***/ }),
-/* 93 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -63584,7 +64983,7 @@ return /******/ (function(modules) { // webpackBootstrap
 ;
 
 /***/ }),
-/* 94 */
+/* 96 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

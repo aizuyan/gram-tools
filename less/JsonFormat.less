@@ -6,6 +6,7 @@
 			&.jsoneditor-mode-tree {
 				div.jsoneditor-readonly, div.jsoneditor-field, div.jsoneditor-value, div.jsoneditor td, div.jsoneditor th, div.jsoneditor textarea, .jsoneditor-schema-error	{
 					font-size: 15px !important;
+					line-height: 1.2em !important;
 				}			
 			}
 			.ace_editor.ace-jsoneditor {
@@ -23,6 +24,23 @@
 				}
 				.jsoneditor-history {
 					background-image: url("../sections/IconHistory.svg");
+				}
+				ul.jsoneditor-menu {
+					li {
+						button {
+							&.jsoneditor-type-modes {
+								div.jsoneditor-text {
+									padding-top: 10px;
+									padding-bottom: 10px;
+								}
+							}
+						}
+					}
+				}
+			}
+			.jsoneditor-navigation-bar {
+				div.jsoneditor-contextmenu ul li button.jsoneditor-selected, div.jsoneditor-contextmenu ul li button.jsoneditor-selected:hover, div.jsoneditor-contextmenu ul li button.jsoneditor-selected:focus {
+					background-color: #3883fa;
 				}
 			}
 		}

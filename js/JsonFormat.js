@@ -1,5 +1,56 @@
 import JSONEditor from "JSONEditor";
 import "../node_modules/jsoneditor/dist/jsoneditor.css";
+import utilMine from "../node_modules/jsoneditor/src/js/util";
+JSONEditor.prototype.setMode = function (mode) {
+  var container = this.container;
+  var options = utilMine.extend({}, this.options);
+  var oldMode = options.mode;
+  var data;
+  var name;
+
+  options.mode = mode;
+  var config = JSONEditor.modes[mode];
+  if (config) {
+    try {
+      var asText = (config.data == 'text');
+      name = this.getName();
+      data = this[asText ? 'getText' : 'get'](); // get text or json
+
+      this.destroy();
+      utilMine.clear(this);
+      utilMine.extend(this, config.mixin);
+      this.create(container, options);
+
+      this.setName(name);
+      this[asText ? 'setText' : 'set'](data); // set text or json
+
+      if (typeof config.load === 'function') {
+        try {
+          config.load.call(this);
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
+
+      if (typeof options.onModeChange === 'function') {
+        try {
+          options.onModeChange(mode, oldMode);
+        }
+        catch (err) {
+          console.error(err);
+        }
+      }
+    }
+    catch (err) {
+      this._onError(err);
+    }
+  }
+  else {
+    throw new Error('Unknown mode "' + options.mode + '"');
+  }
+};
+
 export default () => {
   	let container, options, json,
       nowFontSize = 13,
@@ -17,6 +68,8 @@ export default () => {
     function formatMenuInfo() {
       $("button[type=button].jsoneditor-repair").remove();
       $("a.jsoneditor-poweredBy").remove();
+
+      $("button.jsoneditor-type-modes.jsoneditor-selected").attr("disabled", "disabled");
 
       // 增加历史记录按钮
       //$(".jsoneditor-menu > .jsoneditor-modes").after('<button type="button" class="jsoneditor-history" disabled=""></button>');
@@ -39,12 +92,6 @@ export default () => {
       }
   	};
 
-    function fixedOnModeChange() {
-      $(document).on("click", "#json-format #json-format-container .jsoneditor-type-modes.jsoneditor-selected", function() {
-        setTimeout(formatMenuInfo, 100);
-      });
-    };
-
   	json = {
 	   "weatherinfo": {
 	     "city": "北京",
@@ -64,6 +111,5 @@ export default () => {
 
     (function() {
       formatMenuInfo();
-      fixedOnModeChange();
     })();
 };
