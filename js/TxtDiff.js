@@ -67,7 +67,8 @@ function handleChar(leftTxt, rightTxt, resultObj) {
       for (let i=0; i<partValue.length; i++) {
         charAtPos = partValue.charAt(i);
         last = charAtPos;
-        if (charAtPos == "\n" && last == charAtPos && !isOnlyEnter(partValue)) {
+        //if (charAtPos == "\n" && last == charAtPos && !isOnlyEnter(partValue)) {
+        if (charAtPos == "\n") {
         } else {
           if (part.added) {
             changed = changed | 1;
