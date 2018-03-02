@@ -2,9 +2,9 @@ const {app, BrowserWindow} = require('electron')
 const path = require('path')
 const url = require('url')
 const electron = require('electron');
-const Menu = electron.Menu;
 
 const Tray = require("./js/tray/Tray"); // 托盘图标
+const Menu = require("./js/menu/Menu"); // 复制粘贴
 
 
 let win = null;
@@ -39,6 +39,7 @@ function createWin () {
 
   // 内容加在完毕之后，设置托盘图标
   contents.on('did-finish-load', () => {
+    Menu.InitMenu(app, win);
     if (!isTrayInit) {
       Tray.InitTray(app, win);
       isTrayInit = true

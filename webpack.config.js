@@ -34,6 +34,6 @@ const assetsPath = path.join(appPath, "assets");
             "window.jQuery": 'jquery'
         }),
         // 压缩
-        //new uglify()
+        new uglify()
     ]
 };

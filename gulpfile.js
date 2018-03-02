@@ -1,11 +1,12 @@
 var gulp = require('gulp'),
     less = require('gulp-less'),
-    cssMin = require('gulp-minify-css'),
+    cssMin = require('gulp-clean-css'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
     path = require('path'),
     replace = require("gulp-replace"),
-    fs = require("fs");
+    fs = require("fs"),
+    htmlmin = require('gulp-htmlmin');
 
 /**
  * 常用变量
@@ -32,7 +33,7 @@ gulp.task('handleCss', ["makeCss"], function () {
     		path.join(projectPath, "less", "sections.css")
     	])
         .pipe(concat("tools.css"))
-        //.pipe(cssMin())
+        .pipe(cssMin())
         .pipe(rename({suffix:'.min'}))
         .pipe(gulp.dest(path.join(assetsPath, "css")));
 });
@@ -79,6 +80,7 @@ gulp.task("handleHtml", function() {
         ))
         .pipe(replace(
             "{SwitchSvg}", getSvgSection("SwitchSvg")
-        ))   
+        )) 
+        .pipe(htmlmin({collapseWhitespace: true}))
         .pipe(gulp.dest(appPath));
 });
