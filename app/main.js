@@ -54,18 +54,33 @@ function createWin () {
 
   // 关闭的时候可能只是想最小化
   win.on('close', (e) => {
+    console.log();
     if (willQuitApp) {
-      win = null
+      win = null;
     } else {
-      e.preventDefault()
-      win.hide()
+      if (process.platform == 'darwin') {
+        if (win.isMaximized()) {
+          win.setFullScreen(false);
+          let times = 0;
+          let timer = setInterval(function() {
+            win.hide();
+            if (times++ > 6) {
+              clearInterval(timer);
+            }
+          }, 200);
+        } else {
+          win.hide();
+        }
+      } else {
+        win.hide(); 
+      }
+      e.preventDefault();
     }
   });
 
   // 窗口已经关闭的时候销毁
   win.on('closed', () => {
     win = null
-    contents = null
   })
 
   // Open the DevTools.
@@ -103,10 +118,12 @@ app.on('activate', function () {
 // 真正的退出
 app.on('before-quit', () => willQuitApp = true)
 
-app.on('window-all-closed', () => {
-  //if (process.platform !== 'darwin') {
-   // app.quit();
-  //}
+app.on('window-all-closed', function () {
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
 })
 
 
