@@ -1,3 +1,20 @@
+#about .container .logo {
+  text-align: center;
+  margin: 20px 0;
+}
+#about .container .name {
+  text-align: center;
+  font-size: 20px;
+}
+#about .container .version {
+  text-align: center;
+  color: #C1C1C1;
+  font-size: 18px;
+}
+#about .container .about-me {
+  font-size: 20px;
+}
+
 #json-format #json-format-container {
   height: 100%;
   background-color: #FFF;

@@ -84,7 +84,7 @@ function createWin () {
   })
 
   // Open the DevTools.
-  contents.openDevTools()
+  //contents.openDevTools()
 }
 app.on('ready', function() {
   createWin();

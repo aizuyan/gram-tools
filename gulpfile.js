@@ -6,7 +6,8 @@ var gulp = require('gulp'),
     path = require('path'),
     replace = require("gulp-replace"),
     fs = require("fs"),
-    htmlmin = require('gulp-htmlmin');
+    htmlmin = require('gulp-htmlmin'),
+    exec = require('child_process').exec;
 
 /**
  * 常用变量
@@ -39,7 +40,7 @@ gulp.task('handleCss', ["makeCss"], function () {
 });
 
 gulp.task("handleImg", function () {
-    return gulp.src("img/**/*.png")
+    return gulp.src(["img/**/*.png", "img/**/*.icns", "img/**/*.ico"])
         .pipe(gulp.dest(path.join(assetsPath, "img")));
 });
 
@@ -70,6 +71,9 @@ gulp.task("handleHtml", function() {
             "{TxtDiff}", getHtmlSection("TxtDiff")
         ))
         .pipe(replace(
+            "{About}", getHtmlSection("About")
+        ))
+        .pipe(replace(
             "{JsonFormatSvg}", getSvgSection("JsonFormatSvg")
         ))
         .pipe(replace(
@@ -80,7 +84,31 @@ gulp.task("handleHtml", function() {
         ))
         .pipe(replace(
             "{SwitchSvg}", getSvgSection("SwitchSvg")
-        )) 
+        ))
+        .pipe(replace(
+            "{AboutSvg}", getSvgSection("AboutSvg")
+        ))
         .pipe(htmlmin({collapseWhitespace: true}))
         .pipe(gulp.dest(appPath));
 });
+
+gulp.task('pack', () => {
+    const ELECTRON_VERSION = "1.7.9";
+    const APP_VERSION = "1.0.0";
+    let pack = {}
+    pack.macOS = `electron-packager ./app 'GramTools' --platform=darwin --arch=x64 --electron-version=${ELECTRON_VERSION} --overwrite --asar=true --prune --icon=app/assets/img/logo128x128.icns --out=dist --app-version=${APP_VERSION}`
+    pack.win64 = `electron-packager ./app 'GramTools' --platform=win32  --arch=x64 --electron-version=${ELECTRON_VERSION} --overwrite --asar=true --prune --icon=app/assets/img/logo128x128.ico --out=dist --app-version=${APP_VERSION}`
+    pack.win32 = `electron-packager ./app 'GramTools' --platform=win32  --arch=ia32 --electron-version=${ELECTRON_VERSION} --overwrite --asar=true --prune --icon=app/assets/img/logo128x128.ico --out=dist --app-version=${APP_VERSION}`
+    pack.linux = `electron-packager ./app 'GramTools' --platform=linux  --arch=x64 --electron-version=${ELECTRON_VERSION} --overwrite --asar=true --prune --icon=app/assets/img/logo128x128.ico --out=dist --app-version=${APP_VERSION}`
+
+    let cmds = []
+    cmds = [pack.macOS, pack.win64, pack.win32, pack.linux]
+
+    console.log(cmds.join('\n'))
+    exec(cmds.join('\n'), (error, stdout, stderr) => {
+        console.log('end pack.')
+        if (error) {
+            console.error(`exec error: ${error}`)
+        }
+    })
+})

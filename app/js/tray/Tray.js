@@ -7,10 +7,10 @@ function InitTray(app, win) {
     var trayIcon = null;
 
     if (process.platform === 'darwin') {
-        trayIcon = new Tray(path.join(__dirname, "../..", 'assets/img/logoTemplate.png'));
+        trayIcon = new Tray(path.join(__dirname, "../..", 'assets/img/logoAlien16x16.png'));
     }
     else {
-        trayIcon = new Tray(path.join(__dirname, "../..", 'assets/img/logo.png'));
+        trayIcon = new Tray(path.join(__dirname, "../..", 'assets/img/logoAlien16x16.png'));
     }
     trayIcon.setToolTip("GramTools")
 

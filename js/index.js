@@ -10,6 +10,7 @@ import "../node_modules/layui-layer/dist/layer.js";
 import JsonFromat from "./JsonFormat.js";
 import TxtDiff from "./TxtDiff.js";
 
+	
 var pageObj = {
 	system: {},	// app系统级别的变量
 	sectionIndex: {},	// 各个section的index
@@ -25,6 +26,7 @@ pageObj.initLoading = function() {
 pageObj.initMenu = function() {
 	let zIndexStart = 1000;
 	$("#index>.right>.section:eq(0)").css("z-index", zIndexStart++);
+	$("#index>.right>.section:gt(0)").css("top", "-100%");
 	$("#index>.left").on("click", ".item", function(e){
 		let me = $(this);
 		let index = $("#index>.left>.item").index(this);

@@ -25,7 +25,7 @@ const assetsPath = path.join(appPath, "assets");
                 use: 'url-loader?limit=8000&name=[name]-[hash].[ext]&outputPath=img/&publicPath=assets/'
             }, 
         ]
-    },   
+    },
     plugins: [
         // 打包内容里面全局jquery
         new webpack.ProvidePlugin({
